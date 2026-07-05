@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Despensa al Día</string>
+    <string name="widget_title">Despensa al Día</string>
+    <string name="widget_emoji">🍏</string>
+    <string name="widget_subtitle">Consumir pronto:</string>
+    <string name="widget_loading">Cargando productos...</string>
+    <string name="widget_empty">¡Todo al día! 🎉</string>
+
+    <string name="onboarding_1_title">Deja de tirar tu dinero a la basura.</string>
+    <string name="onboarding_1_desc">Controla la fecha de vencimiento de tus alimentos y visualiza cuánto dinero ahorras al evitar desperdicios.</string>
+    <string name="onboarding_2_title">Registra alimentos en segundos.</string>
+    <string name="onboarding_2_desc">Añade productos con su precio y cantidad para tener un inventario inteligente siempre a mano.</string>
+    <string name="onboarding_3_title">Nosotros te avisaremos antes.</string>
+    <string name="onboarding_3_desc">Recibe notificaciones locales personalizadas para consumir los alimentos que están próximos a vencer.</string>
+    <string name="onboarding_4_title">Configuración Inicial</string>
+    <string name="onboarding_4_desc">Selecciona tu país y moneda para que podamos calcular tus estadísticas de ahorro correctamente.</string>
+
+    <string name="status_fresh">Fresco</string>
+    <string name="status_soon">Vence pronto</string>
+    <string name="status_today">Vence hoy</string>
+    <string name="status_expired">Ya venció</string>
+
+    <string name="category_all">Todos</string>
+    <string name="category_fruits">Frutas y Verduras</string>
+    <string name="category_dairy">Lácteos y Huevos</string>
+    <string name="category_meat">Carnes y Pescados</string>
+    <string name="category_drinks">Bebidas</string>
+    <string name="category_pantry">Despensa / Granos</string>
+    <string name="category_others">Otros</string>
+</resources>
