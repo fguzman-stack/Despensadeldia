@@ -1,0 +1,20 @@
+[
+  {
+    "id": "rec_001",
+    "name": "Tortilla de patatas",
+    "ingredients": ["patata", "huevo", "cebolla", "aceite", "sal"],
+    "steps": ["Pelar y cortar patatas", "Freír patatas y cebolla", "Batir huevos", "Mezclar todo", "Cuajar en sartén"],
+    "prepTimeMinutes": 30,
+    "difficulty": "Fácil",
+    "region": "es"
+  },
+  {
+    "id": "rec_002",
+    "name": "Gazpacho andaluz",
+    "ingredients": ["tomate", "pepino", "pimiento", "cebolla", "ajo", "aceite", "vinagre", "sal"],
+    "steps": ["Lavar y trocear verduras", "Triturar todo", "Añadir aceite y vinagre", "Enfriar"],
+    "prepTimeMinutes": 15,
+    "difficulty": "Fácil",
+    "region": "es"
+  }
+]

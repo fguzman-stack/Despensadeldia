@@ -37,15 +37,24 @@ fun SetupScreen(
     onSetupComplete: () -> Unit
 ) {
     val presets = listOf(
-        CountryPreset("España", "EUR", "€"),
-        CountryPreset("México", "MXN", "$"),
-        CountryPreset("Colombia", "COP", "$"),
-        CountryPreset("Argentina", "ARS", "$"),
-        CountryPreset("Chile", "CLP", "$"),
-        CountryPreset("Perú", "PEN", "S/."),
-        CountryPreset("Estados Unidos", "USD", "$"),
-        CountryPreset("Venezuela", "VES", "Bs.D"),
-        CountryPreset("Uruguay", "UYU", "$"),
+        CountryPreset("🇪🇸 España", "EUR", "€"),
+        CountryPreset("🇲🇽 México", "MXN", "$"),
+        CountryPreset("🇨🇴 Colombia", "COP", "$"),
+        CountryPreset("🇦🇷 Argentina", "ARS", "$"),
+        CountryPreset("🇨🇱 Chile", "CLP", "$"),
+        CountryPreset("🇵🇪 Perú", "PEN", "S/."),
+        CountryPreset("🇺🇸 Estados Unidos", "USD", "$"),
+        CountryPreset("🇻🇪 Venezuela", "VES", "Bs.D"),
+        CountryPreset("🇺🇾 Uruguay", "UYU", "$"),
+        CountryPreset("🇧🇷 Brasil", "BRL", "R$"),
+        CountryPreset("🇪🇨 Ecuador", "USD", "$"),
+        CountryPreset("🇵🇾 Paraguay", "PYG", "Gs."),
+        CountryPreset("🇧🇴 Bolivia", "BOB", "Bs."),
+        CountryPreset("🇬🇹 Guatemala", "GTQ", "Q"),
+        CountryPreset("🇨🇷 Costa Rica", "CRC", "₡"),
+        CountryPreset("🇨🇺 Cuba", "CUP", "$"),
+        CountryPreset("🇩🇴 República Dominicana", "DOP", "$"),
+        CountryPreset("🇵🇦 Panamá", "PAB", "B/."),
         CountryPreset("Otro / Personalizado", "USD", "$")
     )
 

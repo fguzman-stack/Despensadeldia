@@ -18,6 +18,7 @@ class PantryRepository(private val pantryDao: PantryDao) {
     val wastedProducts: Flow<List<Product>> = pantryDao.getProductsByStatus("WASTED")
 
     suspend fun getSettingsDirect(): AppSettings? = pantryDao.getSettingsDirect()
+    suspend fun getActiveProductsDirect(): List<Product> = pantryDao.getActiveProductsDirect()
 
     suspend fun saveSettings(settings: AppSettings) {
         pantryDao.insertSettings(settings)

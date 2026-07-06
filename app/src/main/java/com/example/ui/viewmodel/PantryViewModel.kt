@@ -5,13 +5,20 @@ import androidx.lifecycle.viewModelScope
 import com.example.data.local.AppSettings
 import com.example.data.local.Product
 import com.example.data.repository.PantryRepository
+import com.example.data.recipe.Recipe
+import com.example.data.recipe.RecipeRepository
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
-class PantryViewModel(private val repository: PantryRepository) : ViewModel() {
+class PantryViewModel(
+    private val repository: PantryRepository,
+    private val recipeRepository: RecipeRepository
+) : ViewModel() {
+
+    val recipeSuggestions = MutableStateFlow<List<Pair<Recipe, Int>>>(emptyList())
 
     val settingsState: StateFlow<AppSettings> = repository.settings
         .stateIn(
@@ -41,12 +48,23 @@ class PantryViewModel(private val repository: PantryRepository) : ViewModel() {
             initialValue = emptyList()
         )
 
+    fun updateRecipeSuggestions() {
+        viewModelScope.launch {
+            val settings = repository.getSettingsDirect() ?: return@launch
+            val activeProducts = repository.getActiveProductsDirect().map { it.name.lowercase() }
+            val recipes = recipeRepository.getRecipesByRegion(settings.countryName.take(2).lowercase())
+            
+            recipeSuggestions.value = recipes.map { recipe ->
+                val matches = recipe.ingredients.count { ing -> activeProducts.any { prod -> prod.contains(ing) } }
+                recipe to matches
+            }.filter { it.second > 0 }.sortedByDescending { it.second }
+        }
+    }
+
     fun checkAndRefreshStreak() {
         viewModelScope.launch {
             val currentSettings = repository.getSettingsDirect() ?: return@launch
             val now = System.currentTimeMillis()
-            // Lógica de racha simplificada para producción: 
-            // Si el usuario no ha desperdiciado nada hoy, la racha continúa.
             repository.saveSettings(currentSettings.copy(lastCheckTimestamp = now))
         }
     }

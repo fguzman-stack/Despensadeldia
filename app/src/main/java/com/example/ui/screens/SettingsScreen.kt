@@ -27,6 +27,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import com.example.MainActivity
 import com.example.data.local.AppSettings
 import com.example.receiver.NotificationReceiver
@@ -63,6 +66,14 @@ fun SettingsScreen(
     }
 
     var showTimeDialog by remember { mutableStateOf(false) }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            notificationEnabled = isGranted
+            saveChanges(viewModel, settings, countryName, currencyCode, currencySymbol, selectedTheme, isGranted, notificationHour, notificationMinute, context)
+        }
+    )
 
     Scaffold(
         modifier = modifier
@@ -144,9 +155,22 @@ fun SettingsScreen(
                     }
                     Switch(
                         checked = notificationEnabled,
-                        onCheckedChange = {
-                            notificationEnabled = it
-                            saveChanges(viewModel, settings, countryName, currencyCode, currencySymbol, selectedTheme, notificationEnabled, notificationHour, notificationMinute, context)
+                        onCheckedChange = { isChecked ->
+                            if (isChecked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                val hasPermission = ContextCompat.checkSelfPermission(
+                                    context,
+                                    android.Manifest.permission.POST_NOTIFICATIONS
+                                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                                if (!hasPermission) {
+                                    permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                                } else {
+                                    notificationEnabled = true
+                                    saveChanges(viewModel, settings, countryName, currencyCode, currencySymbol, selectedTheme, true, notificationHour, notificationMinute, context)
+                                }
+                            } else {
+                                notificationEnabled = isChecked
+                                saveChanges(viewModel, settings, countryName, currencyCode, currencySymbol, selectedTheme, isChecked, notificationHour, notificationMinute, context)
+                            }
                         },
                         modifier = Modifier.testTag("settings_notifications_switch")
                     )

@@ -348,7 +348,6 @@ fun ProductCard(
     }
 }
 
-// ... Resto de componentes (EmptyStateView, AddEditProductDialog, AdBanner) se mantienen con ajustes menores de color
 @Composable
 fun EmptyStateView(
     searchActive: Boolean,
@@ -405,6 +404,9 @@ fun AddEditProductDialog(
     var selectedDateInMillis by remember { mutableStateOf(calendar.timeInMillis) }
     var showDatePicker by remember { mutableStateOf(false) }
 
+    var categoryExpanded by remember { mutableStateOf(false) }
+    var unitExpanded by remember { mutableStateOf(false) }
+
     val categories = listOf("Frutas y Verduras", "Lácteos y Huevos", "Carnes y Pescados", "Bebidas", "Despensa / Granos", "Otros")
     val units = listOf("uds", "kg", "g", "L", "ml")
 
@@ -424,6 +426,27 @@ fun AddEditProductDialog(
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("¿Qué es?") }, modifier = Modifier.fillMaxWidth())
                 
+                // Categoría
+                ExposedDropdownMenuBox(
+                    expanded = categoryExpanded,
+                    onExpandedChange = { categoryExpanded = !categoryExpanded },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = category,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Categoría") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
+                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(expanded = categoryExpanded, onDismissRequest = { categoryExpanded = false }) {
+                        categories.forEach { cat ->
+                            DropdownMenuItem(text = { Text(cat) }, onClick = { category = cat; categoryExpanded = false })
+                        }
+                    }
+                }
+
                 // Selector de Fecha Simple
                 OutlinedTextField(
                     value = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(selectedDateInMillis)),
@@ -436,8 +459,28 @@ fun AddEditProductDialog(
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(value = priceStr, onValueChange = { priceStr = it }, label = { Text("Precio") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.weight(1f))
-                    OutlinedTextField(value = quantityStr, onValueChange = { quantityStr = it }, label = { Text("Cant.") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.weight(0.8f))
+                    // Unidad
+                    ExposedDropdownMenuBox(
+                        expanded = unitExpanded,
+                        onExpandedChange = { unitExpanded = !unitExpanded },
+                        modifier = Modifier.weight(0.8f)
+                    ) {
+                        OutlinedTextField(
+                            value = unit,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Unidad") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
+                            modifier = Modifier.menuAnchor().fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(expanded = unitExpanded, onDismissRequest = { unitExpanded = false }) {
+                            units.forEach { u ->
+                                DropdownMenuItem(text = { Text(u) }, onClick = { unit = u; unitExpanded = false })
+                            }
+                        }
+                    }
                 }
+                OutlinedTextField(value = quantityStr, onValueChange = { quantityStr = it }, label = { Text("Cant.") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.fillMaxWidth())
             }
         }
     )
@@ -458,6 +501,16 @@ fun AddEditProductDialog(
 
 @Composable
 fun AdBanner() {
+    val tips = remember { listOf(
+        "Tip: Los tomates duran más fuera de la nevera si aún no están muy maduros.",
+        "Tip: Envuelve las hierbas frescas en una toalla de papel húmeda para conservarlas más tiempo.",
+        "Tip: No guardes las papas cerca de las cebollas, se echarán a perder más rápido.",
+        "Tip: Congela las frutas demasiado maduras para hacer batidos después.",
+        "Tip: Coloca las verduras en el cajón inferior para mantener la humedad adecuada.",
+        "Tip: Etiqueta tus envases con la fecha de preparación para un mejor control."
+    ) }
+    val tip = remember { tips.random() }
+
     Card(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)),
@@ -467,7 +520,7 @@ fun AdBanner() {
             Icon(Icons.Default.Lightbulb, contentDescription = null, tint = Color(0xFFF59E0B))
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = "Tip: Los tomates duran más fuera de la nevera si aún no están muy maduros.",
+                text = tip,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.weight(1f)
             )

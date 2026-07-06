@@ -1,7 +1,11 @@
 package com.example
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -11,9 +15,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Kitchen
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.RestaurantMenu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -26,6 +32,8 @@ import com.example.ui.screens.OnboardingScreen
 import com.example.ui.screens.SetupScreen
 import com.example.ui.screens.StatsScreen
 import com.example.ui.screens.SettingsScreen
+import com.example.ui.screens.RecipeScreen
+import com.example.data.recipe.RecipeRepository
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.viewmodel.PantryViewModel
 import com.example.widget.PantryWidgetProvider
@@ -38,10 +46,33 @@ class MainActivity : ComponentActivity() {
         // Local SQLite Database and Repository Initialization
         val database = AppDatabase.getDatabase(this)
         val repository = PantryRepository(database.pantryDao())
-        val viewModel = PantryViewModel(repository)
+        val recipeRepository = RecipeRepository(this)
+        val viewModel = PantryViewModel(repository, recipeRepository)
 
         setContent {
             val settings by viewModel.settingsState.collectAsState()
+
+            // Request Notification Permission on Android 13+ (API 33)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                val context = LocalContext.current
+                val permissionLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission(),
+                    onResult = { isGranted ->
+                        if (isGranted) {
+                            PantryWidgetProvider.triggerUpdate(context)
+                        }
+                    }
+                )
+                LaunchedEffect(Unit) {
+                    val hasPermission = ContextCompat.checkSelfPermission(
+                        context,
+                        android.Manifest.permission.POST_NOTIFICATIONS
+                    ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                    if (!hasPermission) {
+                        permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                }
+            }
 
             // Handle Dynamic Dark / Light theme selection
             val darkTheme = when (settings.theme) {
@@ -139,6 +170,18 @@ fun PantryAppContainer(viewModel: PantryViewModel) {
                     },
                     modifier = Modifier.testTag("nav_item_settings")
                 )
+                NavigationBarItem(
+                    selected = selectedTab == "chef",
+                    onClick = { selectedTab = "chef" },
+                    label = { Text("Chef") },
+                    icon = {
+                        Icon(
+                            imageVector = if (selectedTab == "chef") Icons.Filled.RestaurantMenu else Icons.Outlined.RestaurantMenu,
+                            contentDescription = "Chef"
+                        )
+                    },
+                    modifier = Modifier.testTag("nav_item_chef")
+                )
             }
         }
     ) { innerPadding ->
@@ -152,6 +195,10 @@ fun PantryAppContainer(viewModel: PantryViewModel) {
                 modifier = Modifier.padding(innerPadding)
             )
             "settings" -> SettingsScreen(
+                viewModel = viewModel,
+                modifier = Modifier.padding(innerPadding)
+            )
+            "chef" -> RecipeScreen(
                 viewModel = viewModel,
                 modifier = Modifier.padding(innerPadding)
             )
