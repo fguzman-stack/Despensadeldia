@@ -3,10 +3,12 @@ package com.example.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.local.AppSettings
+import com.example.data.local.ExpiryType
 import com.example.data.local.Product
+import com.example.data.local.ProductCategory
+import com.example.data.local.ProductLocation
+import com.example.data.local.ProductStatus
 import com.example.data.repository.PantryRepository
-import com.example.data.recipe.Recipe
-import com.example.data.recipe.RecipeRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -14,11 +16,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class PantryViewModel(
-    private val repository: PantryRepository,
-    private val recipeRepository: RecipeRepository
+    private val repository: PantryRepository
 ) : ViewModel() {
-
-    val recipeSuggestions = MutableStateFlow<List<Pair<Recipe, Int>>>(emptyList())
 
     val settingsState: StateFlow<AppSettings> = repository.settings
         .stateIn(
@@ -48,26 +47,20 @@ class PantryViewModel(
             initialValue = emptyList()
         )
 
-    fun updateRecipeSuggestions() {
-        viewModelScope.launch {
-            val settings = repository.getSettingsDirect() ?: return@launch
-            val activeProducts = repository.getActiveProductsDirect().map { it.name.lowercase() }
-            val recipes = recipeRepository.getRecipesByRegion(settings.countryName.take(2).lowercase())
-            
-            recipeSuggestions.value = recipes.map { recipe ->
-                val matches = recipe.ingredients.count { ing -> activeProducts.any { prod -> prod.contains(ing) } }
-                recipe to matches
-            }.filter { it.second > 0 }.sortedByDescending { it.second }
-        }
-    }
+    val donatedProductsState: StateFlow<List<Product>> = repository.donatedProducts
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
-    fun checkAndRefreshStreak() {
-        viewModelScope.launch {
-            val currentSettings = repository.getSettingsDirect() ?: return@launch
-            val now = System.currentTimeMillis()
-            repository.saveSettings(currentSettings.copy(lastCheckTimestamp = now))
-        }
-    }
+    // ─── Last used values for quick entry ──────────────────────────
+
+    val lastUsedLocation = MutableStateFlow(ProductLocation.PANTRY)
+    val lastUsedCategory = MutableStateFlow(ProductCategory.PRODUCE)
+    val lastUsedUnit = MutableStateFlow("uds")
+
+    // ─── Settings ──────────────────────────────────────────────────
 
     fun setOnboardingCompleted() {
         viewModelScope.launch {
@@ -93,49 +86,206 @@ class PantryViewModel(
         viewModelScope.launch { repository.saveSettings(settings) }
     }
 
-    fun addProduct(name: String, category: String, price: Double, quantity: Double, unit: String, expirationDate: Long) {
+    // ─── Add Product ───────────────────────────────────────────────
+
+    fun addProduct(
+        name: String,
+        category: ProductCategory,
+        totalPrice: Double,
+        quantity: Double,
+        unit: String,
+        location: ProductLocation,
+        expiryType: ExpiryType,
+        expirationDate: Long?,
+        barcode: String? = null,
+        notes: String? = null,
+        brand: String? = null
+    ) {
         viewModelScope.launch {
-            repository.insertProduct(Product(
-                name = name, category = category, price = price,
-                quantity = quantity, unit = unit, expirationDate = expirationDate
-            ))
+            repository.insertProduct(
+                Product(
+                    name = name,
+                    category = category,
+                    totalPrice = totalPrice,
+                    quantity = quantity,
+                    unit = unit,
+                    location = location,
+                    expiryType = expiryType,
+                    expirationDate = expirationDate
+                        .takeIf { expiryType != ExpiryType.NONE },
+                    barcode = barcode,
+                    notes = notes,
+                    brand = brand
+                )
+            )
+            // Remember last used values for quick entry
+            lastUsedLocation.value = location
+            lastUsedCategory.value = category
+            lastUsedUnit.value = unit
         }
     }
 
-    fun updateProduct(id: Int, name: String, category: String, price: Double, quantity: Double, unit: String, expirationDate: Long) {
+    // ─── Update Product ────────────────────────────────────────────
+
+    fun updateProduct(
+        id: Int,
+        name: String,
+        category: ProductCategory,
+        totalPrice: Double,
+        quantity: Double,
+        unit: String,
+        location: ProductLocation,
+        expiryType: ExpiryType,
+        expirationDate: Long?,
+        barcode: String? = null,
+        notes: String? = null,
+        brand: String? = null
+    ) {
         viewModelScope.launch {
             val existing = repository.getProductById(id) ?: return@launch
-            repository.updateProduct(existing.copy(
-                name = name, category = category, price = price,
-                quantity = quantity, unit = unit, expirationDate = expirationDate,
-                status = "ACTIVE", resolvedDate = null
-            ))
+            repository.updateProduct(
+                existing.copy(
+                    name = name,
+                    category = category,
+                    totalPrice = totalPrice,
+                    quantity = quantity,
+                    unit = unit,
+                    location = location,
+                    expiryType = expiryType,
+                    expirationDate = expirationDate
+                        .takeIf { expiryType != ExpiryType.NONE },
+                    status = ProductStatus.ACTIVE,
+                    resolvedDate = null,
+                    barcode = barcode,
+                    notes = notes,
+                    brand = brand
+                )
+            )
         }
     }
+
+    // ─── Resolve Product (lifecycle actions) ───────────────────────
 
     fun markAsConsumed(product: Product) {
         viewModelScope.launch {
-            repository.updateProduct(product.copy(status = "CONSUMED", resolvedDate = System.currentTimeMillis()))
-            val settings = repository.getSettingsDirect()
-            if (settings != null) repository.saveSettings(settings.copy(streakDays = settings.streakDays + 1))
+            repository.updateProduct(
+                product.copy(
+                    status = ProductStatus.CONSUMED,
+                    resolvedDate = System.currentTimeMillis()
+                )
+            )
         }
     }
 
     fun markAsWasted(product: Product) {
         viewModelScope.launch {
-            repository.updateProduct(product.copy(status = "WASTED", resolvedDate = System.currentTimeMillis()))
-            val settings = repository.getSettingsDirect()
-            if (settings != null) repository.saveSettings(settings.copy(streakDays = 0))
+            repository.updateProduct(
+                product.copy(
+                    status = ProductStatus.WASTED,
+                    resolvedDate = System.currentTimeMillis()
+                )
+            )
+        }
+    }
+
+    fun markAsDonated(product: Product) {
+        viewModelScope.launch {
+            repository.updateProduct(
+                product.copy(
+                    status = ProductStatus.DONATED,
+                    resolvedDate = System.currentTimeMillis()
+                )
+            )
         }
     }
 
     fun undoProductResolution(product: Product) {
         viewModelScope.launch {
-            repository.updateProduct(product.copy(status = "ACTIVE", resolvedDate = null))
+            repository.updateProduct(
+                product.copy(
+                    status = ProductStatus.ACTIVE,
+                    resolvedDate = null
+                )
+            )
         }
     }
 
+    // ─── Snooze ────────────────────────────────────────────────────
+
+    fun snoozeProduct(product: Product, snoozeUntilTimestamp: Long) {
+        viewModelScope.launch {
+            repository.updateProduct(
+                product.copy(snoozeUntil = snoozeUntilTimestamp)
+            )
+        }
+    }
+
+    // ─── Delete ────────────────────────────────────────────────────
+
     fun deleteProduct(id: Int) {
         viewModelScope.launch { repository.deleteProductById(id) }
+    }
+
+    // ─── Stats helpers ─────────────────────────────────────────────
+
+    suspend fun getResolvedProductsInRange(startOfMonth: Long, endOfMonth: Long): List<Product> {
+        return repository.getResolvedProductsInRange(startOfMonth, endOfMonth)
+    }
+
+    suspend fun getAllProductsDirect(): List<Product> {
+        return repository.getAllProductsDirect()
+    }
+
+    // ─── Shopping List ─────────────────────────────────────────────
+
+    val shoppingItemsState: StateFlow<List<com.example.data.local.ShoppingItem>> = repository.allShoppingItems
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    fun addShoppingItem(
+        name: String,
+        category: ProductCategory,
+        quantity: Double,
+        unit: String,
+        location: ProductLocation? = null,
+        preferredBrand: String? = null,
+        estimatedPrice: Double? = null,
+        sourceProductId: Int? = null
+    ) {
+        viewModelScope.launch {
+            repository.insertShoppingItem(
+                com.example.data.local.ShoppingItem(
+                    name = name,
+                    category = category,
+                    quantity = quantity,
+                    unit = unit,
+                    location = location,
+                    preferredBrand = preferredBrand,
+                    estimatedPrice = estimatedPrice,
+                    sourceProductId = sourceProductId
+                )
+            )
+        }
+    }
+
+    fun toggleShoppingItem(item: com.example.data.local.ShoppingItem, isChecked: Boolean) {
+        viewModelScope.launch {
+            repository.updateShoppingItem(item.copy(isChecked = isChecked))
+        }
+    }
+
+    fun deleteShoppingItem(item: com.example.data.local.ShoppingItem) {
+        viewModelScope.launch {
+            repository.deleteShoppingItem(item)
+        }
+    }
+
+    fun deleteCheckedShoppingItems() {
+        viewModelScope.launch {
+            repository.deleteCheckedShoppingItems()
+        }
     }
 }

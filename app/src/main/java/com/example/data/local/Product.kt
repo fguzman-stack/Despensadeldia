@@ -7,12 +7,18 @@ import androidx.room.PrimaryKey
 data class Product(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
-    val category: String, // e.g., "Frutas y Verduras", "Lácteos", "Carnes", etc.
-    val price: Double,
-    val quantity: Double,
-    val unit: String,     // e.g., "uds", "kg", "L"
-    val expirationDate: Long, // timestamp
+    val category: ProductCategory = ProductCategory.OTHER,
+    val totalPrice: Double = 0.0,
+    val quantity: Double = 1.0,
+    val unit: String = "uds",
+    val location: ProductLocation = ProductLocation.PANTRY,
+    val expiryType: ExpiryType = ExpiryType.FIXED,
+    val expirationDate: Long? = null,
     val addedDate: Long = System.currentTimeMillis(),
-    val status: String = "ACTIVE", // "ACTIVE", "CONSUMED", "WASTED"
-    val resolvedDate: Long? = null // timestamp when consumed or wasted
+    val status: ProductStatus = ProductStatus.ACTIVE,
+    val resolvedDate: Long? = null,
+    val barcode: String? = null,
+    val notes: String? = null,
+    val brand: String? = null,
+    val snoozeUntil: Long? = null
 )

@@ -27,6 +27,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -34,6 +36,8 @@ import com.example.MainActivity
 import com.example.data.local.AppSettings
 import com.example.receiver.NotificationReceiver
 import com.example.ui.viewmodel.PantryViewModel
+import com.example.utils.BackupHelper
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,6 +78,9 @@ fun SettingsScreen(
             saveChanges(viewModel, settings, countryName, currencyCode, currencySymbol, selectedTheme, isGranted, notificationHour, notificationMinute, context)
         }
     )
+    
+    val scope = rememberCoroutineScope()
+    var showPrivacyDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier
@@ -87,20 +94,20 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Ajustes",
+                text = stringResource(R.string.settings_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
 
             // 1. Regional Configuration Section
-            SettingsSection(title = "Localización y Moneda") {
+            SettingsSection(title = stringResource(R.string.section_localization)) {
                 OutlinedTextField(
                     value = countryName,
                     onValueChange = {
                         countryName = it
                         saveChanges(viewModel, settings, countryName, currencyCode, currencySymbol, selectedTheme, notificationEnabled, notificationHour, notificationMinute, context)
                     },
-                    label = { Text("País / Región") },
+                    label = { Text(stringResource(R.string.country_label)) },
                     leadingIcon = { Icon(Icons.Filled.Public, contentDescription = null) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth().testTag("settings_country_input")
@@ -116,7 +123,7 @@ fun SettingsScreen(
                             currencyCode = it.uppercase()
                             saveChanges(viewModel, settings, countryName, currencyCode, currencySymbol, selectedTheme, notificationEnabled, notificationHour, notificationMinute, context)
                         },
-                        label = { Text("Moneda") },
+                        label = { Text(stringResource(R.string.currency_label)) },
                         singleLine = true,
                         modifier = Modifier.weight(1f).testTag("settings_currency_code_input")
                     )
@@ -127,7 +134,7 @@ fun SettingsScreen(
                             currencySymbol = it
                             saveChanges(viewModel, settings, countryName, currencyCode, currencySymbol, selectedTheme, notificationEnabled, notificationHour, notificationMinute, context)
                         },
-                        label = { Text("Símbolo") },
+                        label = { Text(stringResource(R.string.symbol_label)) },
                         singleLine = true,
                         modifier = Modifier.weight(1f).testTag("settings_currency_symbol_input")
                     )
@@ -135,7 +142,7 @@ fun SettingsScreen(
             }
 
             // 2. Notification Schedule Section
-            SettingsSection(title = "Notificaciones Diarias") {
+            SettingsSection(title = stringResource(R.string.section_notifications)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -143,12 +150,12 @@ fun SettingsScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Recordatorios de vencimiento",
+                            text = stringResource(R.string.notification_title),
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Medium
                         )
                         Text(
-                            text = "Avisar diariamente de alimentos próximos a vencer",
+                            text = stringResource(R.string.notification_desc),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -178,7 +185,7 @@ fun SettingsScreen(
 
                 if (notificationEnabled) {
                     ListItem(
-                        headlineContent = { Text("Hora de los recordatorios") },
+                        headlineContent = { Text(stringResource(R.string.notification_time)) },
                         supportingContent = { 
                             Text(String.format(null, "%02d:%02d", notificationHour, notificationMinute)) 
                         },
@@ -187,7 +194,7 @@ fun SettingsScreen(
                         },
                         trailingContent = {
                             TextButton(onClick = { showTimeDialog = true }) {
-                                Text("Modificar")
+                                Text(stringResource(R.string.modify))
                             }
                         },
                         modifier = Modifier
@@ -209,14 +216,14 @@ fun SettingsScreen(
                 ) {
                     Icon(imageVector = Icons.Filled.NotificationsActive, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Probar Notificación de Alerta")
+                    Text(stringResource(R.string.test_notification))
                 }
             }
 
             // 3. Application Visual Theme Section
-            SettingsSection(title = "Apariencia") {
+            SettingsSection(title = stringResource(R.string.section_appearance)) {
                 Text(
-                    text = "Tema de la Aplicación",
+                    text = stringResource(R.string.theme_label),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium
                 )
@@ -225,9 +232,9 @@ fun SettingsScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     val themes = listOf(
-                        Triple("SYSTEM", "Sistema", Icons.Filled.SettingsSystemDaydream),
-                        Triple("LIGHT", "Claro", Icons.Filled.LightMode),
-                        Triple("DARK", "Oscuro", Icons.Filled.DarkMode)
+                        Triple("SYSTEM", stringResource(R.string.theme_system), Icons.Filled.SettingsSystemDaydream),
+                        Triple("LIGHT", stringResource(R.string.theme_light), Icons.Filled.LightMode),
+                        Triple("DARK", stringResource(R.string.theme_dark), Icons.Filled.DarkMode)
                     )
 
                     themes.forEach { (themeCode, themeLabel, themeIcon) ->
@@ -269,7 +276,73 @@ fun SettingsScreen(
                     }
                 }
             }
+            // 4. Data Backup Section
+            SettingsSection(title = stringResource(R.string.section_data)) {
+                Text(
+                    text = stringResource(R.string.data_description),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { 
+                            scope.launch {
+                                val products = viewModel.getAllProductsDirect()
+                                BackupHelper.exportToJson(context, products)
+                            }
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Filled.Code, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.export_json))
+                    }
+
+                    OutlinedButton(
+                        onClick = { 
+                            scope.launch {
+                                val products = viewModel.getAllProductsDirect()
+                                BackupHelper.exportToCsv(context, products)
+                            }
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Filled.TableView, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.export_csv))
+                    }
+                }
+            }
+
+            // 5. Privacy & Info Section
+            SettingsSection(title = stringResource(R.string.section_about)) {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.privacy_title)) },
+                    supportingContent = { Text(stringResource(R.string.privacy_description)) },
+                    leadingContent = { Icon(Icons.Filled.PrivacyTip, contentDescription = null) },
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { showPrivacyDialog = true }
+                )
+            }
         }
+    }
+    
+    if (showPrivacyDialog) {
+        AlertDialog(
+            onDismissRequest = { showPrivacyDialog = false },
+            title = { Text(stringResource(R.string.privacy_title)) },
+            text = {
+                Text(stringResource(R.string.privacy_detail))
+            },
+            confirmButton = {
+                TextButton(onClick = { showPrivacyDialog = false }) { Text(stringResource(R.string.understood)) }
+            }
+        )
     }
 
     // Time Selection Dropdown Dialog (uniquely robust and independent of experimental Compose APIs)
@@ -279,7 +352,7 @@ fun SettingsScreen(
 
         AlertDialog(
             onDismissRequest = { showTimeDialog = false },
-            title = { Text("Configurar Hora", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.notification_time), fontWeight = FontWeight.Bold) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -289,12 +362,12 @@ fun SettingsScreen(
                         showTimeDialog = false
                     }
                 ) {
-                    Text("Guardar")
+                    Text(stringResource(R.string.save))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showTimeDialog = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.cancel))
                 }
             },
             text = {
@@ -305,7 +378,7 @@ fun SettingsScreen(
                 ) {
                     // Hour picker
                     NumberSelector(
-                        label = "Hora",
+                        label = "Hour",
                         value = tempHour,
                         range = 0..23,
                         onValueChange = { tempHour = it }
@@ -315,7 +388,7 @@ fun SettingsScreen(
 
                     // Minute picker
                     NumberSelector(
-                        label = "Minuto",
+                        label = "Min",
                         value = tempMinute,
                         range = 0..59,
                         onValueChange = { tempMinute = it }
@@ -439,7 +512,7 @@ private fun simulateInstantNotification(context: Context) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val channel = NotificationChannel(
             channelId,
-            "Avisos de Vencimiento de Alimentos",
+            "Expiry Alerts",
             NotificationManager.IMPORTANCE_DEFAULT
         )
         notificationManager.createNotificationChannel(channel)
@@ -457,8 +530,8 @@ private fun simulateInstantNotification(context: Context) {
 
     val notification = NotificationCompat.Builder(context, channelId)
         .setSmallIcon(android.R.drawable.ic_dialog_info)
-        .setContentTitle("Prueba de Alerta de Despensa 🍏")
-        .setContentText("¡Tienes 2 plátanos maduros próximos a vencer mañana! Prepárate un delicioso pan de plátano.")
+        .setContentTitle("Test Alert")
+        .setContentText("You have products about to expire tomorrow!")
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         .setContentIntent(pendingIntent)
         .setAutoCancel(true)

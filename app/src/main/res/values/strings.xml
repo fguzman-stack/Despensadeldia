@@ -1,30 +1,203 @@
 <resources>
     <string name="app_name">Despensa al Día</string>
     <string name="widget_title">Despensa al Día</string>
-    <string name="widget_emoji">🍏</string>
-    <string name="widget_subtitle">Consumir pronto:</string>
-    <string name="widget_loading">Cargando productos...</string>
-    <string name="widget_empty">¡Todo al día! 🎉</string>
+    <string name="widget_subtitle">Consume soon:</string>
+    <string name="widget_loading">Loading products…</string>
+    <string name="widget_empty">All clear! 🎉</string>
 
-    <string name="onboarding_1_title">Deja de tirar tu dinero a la basura.</string>
-    <string name="onboarding_1_desc">Controla la fecha de vencimiento de tus alimentos y visualiza cuánto dinero ahorras al evitar desperdicios.</string>
-    <string name="onboarding_2_title">Registra alimentos en segundos.</string>
-    <string name="onboarding_2_desc">Añade productos con su precio y cantidad para tener un inventario inteligente siempre a mano.</string>
-    <string name="onboarding_3_title">Nosotros te avisaremos antes.</string>
-    <string name="onboarding_3_desc">Recibe notificaciones locales personalizadas para consumir los alimentos que están próximos a vencer.</string>
-    <string name="onboarding_4_title">Configuración Inicial</string>
-    <string name="onboarding_4_desc">Selecciona tu país y moneda para que podamos calcular tus estadísticas de ahorro correctamente.</string>
+    <!-- Onboarding -->
+    <string name="onboarding_1_title">Stop throwing your money away.</string>
+    <string name="onboarding_1_desc">Track expiration dates and see how much money you save by avoiding waste.</string>
+    <string name="onboarding_2_title">Register food in seconds.</string>
+    <string name="onboarding_2_desc">Add products with price and quantity to keep a smart inventory at your fingertips.</string>
+    <string name="onboarding_3_title">We will remind you in time.</string>
+    <string name="onboarding_3_desc">Get personalized local notifications to consume products before they expire.</string>
 
-    <string name="status_fresh">Fresco</string>
-    <string name="status_soon">Vence pronto</string>
-    <string name="status_today">Vence hoy</string>
-    <string name="status_expired">Ya venció</string>
+    <!-- Freshness status -->
+    <string name="status_fresh">Fresh</string>
+    <string name="status_soon">Expiring soon</string>
+    <string name="status_today">Expires today</string>
+    <string name="status_expired">Expired</string>
 
-    <string name="category_all">Todos</string>
-    <string name="category_fruits">Frutas y Verduras</string>
-    <string name="category_dairy">Lácteos y Huevos</string>
-    <string name="category_meat">Carnes y Pescados</string>
-    <string name="category_drinks">Bebidas</string>
-    <string name="category_pantry">Despensa / Granos</string>
-    <string name="category_others">Otros</string>
+    <!-- Categories -->
+    <string name="category_all">All</string>
+    <string name="category_produce">Produce</string>
+    <string name="category_dairy_eggs">Dairy and Eggs</string>
+    <string name="category_meat_seafood">Meat and Seafood</string>
+    <string name="category_beverages">Beverages</string>
+    <string name="category_pantry">Pantry</string>
+    <string name="category_bakery">Bakery</string>
+    <string name="category_frozen">Frozen Food</string>
+    <string name="category_medicine">Medicine</string>
+    <string name="category_cleaning">Cleaning</string>
+    <string name="category_pet_supplies">Pet Supplies</string>
+    <string name="category_other">Other</string>
+
+    <!-- Locations -->
+    <string name="location_pantry">Pantry</string>
+    <string name="location_fridge">Fridge</string>
+    <string name="location_freezer">Freezer</string>
+    <string name="location_medicine_cabinet">Medicine Cabinet</string>
+    <string name="location_cleaning">Cleaning</string>
+    <string name="location_pets">Pets</string>
+    <string name="location_other">Other</string>
+
+    <!-- Expiry types -->
+    <string name="expiry_fixed">Fixed date</string>
+    <string name="expiry_best_before">Best Before</string>
+    <string name="expiry_estimated">Estimated</string>
+    <string name="expiry_none">No expiration</string>
+
+    <!-- Use First screen -->
+    <string name="use_first_title">Use First</string>
+    <string name="use_first_subtitle">Review and act before they expire</string>
+    <string name="use_first_all_clear">All clear!</string>
+    <string name="use_first_no_urgent">Nothing urgent today.</string>
+    <string name="section_expired">Expired</string>
+    <string name="section_expired_subtitle">What happened with these products?</string>
+    <string name="section_today">Expires today</string>
+    <string name="section_today_subtitle">Use them before the day ends</string>
+    <string name="section_tomorrow">Expires tomorrow</string>
+    <string name="section_tomorrow_subtitle">Plan to consume them</string>
+    <string name="section_this_week">This week</string>
+    <string name="section_this_week_subtitle">You have time, but not too much</string>
+    <string name="action_resolve">Resolve</string>
+    <string name="action_snooze">Snooze</string>
+    <string name="dialog_what_happened">What happened with %1$s?</string>
+    <string name="option_consumed">I consumed it</string>
+    <string name="option_wasted">I wasted it</string>
+    <string name="option_donated">I donated or shared it</string>
+    <string name="option_keep">Keep in inventory</string>
+    <string name="snooze_title">Snooze alert for %1$s</string>
+    <string name="snooze_description">The expiration date won\'t change. It will just be hidden temporarily.</string>
+    <string name="snooze_1_day">1 day</string>
+    <string name="snooze_3_days">3 days</string>
+    <string name="snooze_7_days">7 days</string>
+    <string name="snackbar_consumed">%1$s marked as consumed</string>
+    <string name="snackbar_wasted">%1$s registered as wasted</string>
+    <string name="snackbar_donated">%1$s registered as donated</string>
+    <string name="snackbar_undone">Undo</string>
+    <string name="snackbar_snoozed">Alert for %1$s postponed %2$d days</string>
+
+    <!-- Dashboard / Inventory -->
+    <string name="inventory_title">My Inventory</string>
+    <string name="inventory_count">%1$d products registered</string>
+    <string name="inventory_empty">Your inventory is empty</string>
+    <string name="inventory_empty_hint">Tap + to register your first product.</string>
+    <string name="inventory_no_results">No results</string>
+    <string name="search_products">Search products…</string>
+    <string name="filter_all">All</string>
+    <string name="filter_all_locations">All locations</string>
+    <string name="clear_filters">Clear filters</string>
+    <string name="add_product">Add product</string>
+    <string name="edit_product">Edit product</string>
+    <string name="what_is_it">What is it?</string>
+    <string name="location">Location</string>
+    <string name="expiry_type">Expiry type</string>
+    <string name="category">Category</string>
+    <string name="price">Price (%1$s)</string>
+    <string name="quantity">Quantity</string>
+    <string name="unit">Unit</string>
+    <string name="brand_optional">Brand (optional)</string>
+    <string name="notes_optional">Notes (optional)</string>
+    <string name="more_details">More details</string>
+    <string name="less_details">Less details</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    <string name="swipe_consumed">Consumed</string>
+    <string name="swipe_wasted">Wasted</string>
+
+    <!-- Expiry hints -->
+    <string name="no_expiry">No expiration</string>
+    <string name="expired">Expired</string>
+    <string name="expires_today">Expires today</string>
+    <string name="expires_soon">Expires soon</string>
+    <string name="hint_best_before">Best before — check before using</string>
+    <string name="hint_estimated">Estimated — may vary</string>
+    <string name="value_label">Value: %1$s%2$s</string>
+
+    <!-- Shopping List -->
+    <string name="shopping_list">Shopping List</string>
+    <string name="shopping_list_empty">Your shopping list is empty</string>
+    <string name="add_to_list">Add product to list</string>
+    <string name="add_item">Add item</string>
+    <string name="product">Product</string>
+    <string name="share_list">Share list</string>
+    <string name="clean_checked">Clean checked</string>
+    <string name="checked_items">Purchased</string>
+
+    <!-- Stats -->
+    <string name="stats_title">Your activity in %1$s</string>
+    <string name="consumed">Consumed</string>
+    <string name="wasted">Wasted</string>
+    <string name="donated">Donated</string>
+    <string name="rescued">Rescued</string>
+    <string name="rescued_hint">before expiring</string>
+    <string name="consumption_rate">Consumption rate</string>
+    <string name="consumed_label">Consumed</string>
+    <string name="wasted_label">Wasted</string>
+    <string name="economic_value">Economic value this month</string>
+    <string name="value_consumed">Value consumed</string>
+    <string name="value_wasted">Value wasted</string>
+    <string name="value_donated">Value donated</string>
+    <string name="waste_categories">Categories with most waste</string>
+    <string name="products_count">%1$d products</string>
+    <string name="product_count_singular">%1$d product</string>
+    <string name="inventory_health">Your inventory health</string>
+    <string name="health_fresh">Fresh products</string>
+    <string name="health_expiring">Expiring soon</string>
+    <string name="health_expired">Expired products</string>
+    <string name="stats_empty">Statistics fill up when you mark products as consumed, wasted or donated.</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="section_localization">Location and Currency</string>
+    <string name="country_label">Country / Region</string>
+    <string name="currency_label">Currency</string>
+    <string name="symbol_label">Symbol</string>
+    <string name="section_notifications">Daily Notifications</string>
+    <string name="notification_title">Expiry reminders</string>
+    <string name="notification_desc">Notify daily about expiring products</string>
+    <string name="notification_time">Reminder time</string>
+    <string name="modify">Modify</string>
+    <string name="test_notification">Test Notification</string>
+    <string name="section_appearance">Appearance</string>
+    <string name="theme_label">App theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="section_data">Data and Backup</string>
+    <string name="data_description">Export your data to keep or analyze it.</string>
+    <string name="export_json">JSON Backup</string>
+    <string name="export_csv">CSV Export</string>
+    <string name="section_about">About Despensa al Día</string>
+    <string name="privacy_title">Privacy</string>
+    <string name="privacy_description">All your information is stored only on this device. We do not use cloud servers.</string>
+    <string name="privacy_detail">Despensa al Día was built with privacy in mind.\n\n• Your data (inventory, settings, lists) is stored locally on your device using an internal database (Room).\n• We do not require accounts, emails or passwords.\n• We do not share or send your consumption habits to any external server.\n• If you uninstall the app, your data will be lost unless you use the JSON backup feature.\n\nYour pantry, your rules, your privacy.</string>
+    <string name="understood">Got it</string>
+
+    <!-- Setup -->
+    <string name="setup_title">Preferences</string>
+    <string name="setup_message">Configure your region to show currency and date formats correctly.</string>
+    <string name="setup_country">Country / Region</string>
+    <string name="setup_currency_code">Currency code (e.g. USD)</string>
+    <string name="setup_currency_symbol">Symbol (e.g. $)</string>
+    <string name="setup_use_device">Use device settings</string>
+    <string name="setup_manual">Manual</string>
+    <string name="setup_confirm">Confirm and Continue</string>
+
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="no_expiration">No expiration</string>
+    <string name="days">days</string>
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="yesterday">Yesterday</string>
+
+    <!-- Widget -->
+    <string name="widget_emoji">📋</string>
+    <string name="widget_expired">Expired</string>
+    <string name="widget_due_today">Due today ⚠️</string>
+    <string name="widget_due_tomorrow">Tomorrow</string>
 </resources>
