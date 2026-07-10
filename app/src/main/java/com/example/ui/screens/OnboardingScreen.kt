@@ -28,8 +28,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import com.example.R
-import com.example.ui.theme.EmeraldGreen
+import com.example.ui.theme.Emerald
+import com.example.ui.theme.Sky
+import com.example.ui.theme.Amber
+import com.example.ui.theme.Cream
 import kotlinx.coroutines.launch
 
 data class OnboardData(
@@ -50,23 +54,23 @@ fun OnboardingScreen(
 
     val pages = listOf(
         OnboardData(
-            title = "Deja de tirar tu dinero a la basura.",
-            desc = "Cada alimento que vence es dinero perdido. Te ayudaremos a gestionar tu despensa para que nada termine en el cubo.",
+            title = stringResource(R.string.onboarding_1_title),
+            desc = stringResource(R.string.onboarding_1_desc),
             icon = Icons.Default.Savings,
-            color = EmeraldGreen,
+            color = Emerald,
             imageRes = R.drawable.img_onboarding_pantry_1782847462558
         ),
         OnboardData(
-            title = "Registra alimentos en segundos.",
-            desc = "Añade productos de forma rápida. Controla cantidades, precios y fechas de forma visual y sencilla.",
+            title = stringResource(R.string.onboarding_2_title),
+            desc = stringResource(R.string.onboarding_2_desc),
             icon = Icons.Default.Speed,
-            color = Color(0xFF3B82F6)
+            color = Sky
         ),
         OnboardData(
-            title = "Nosotros te avisaremos antes.",
-            desc = "Recibe recordatorios inteligentes para consumir lo más urgente. ¡Tu comida siempre fresca y tu bolsillo lleno!",
+            title = stringResource(R.string.onboarding_3_title),
+            desc = stringResource(R.string.onboarding_3_desc),
             icon = Icons.Default.NotificationsActive,
-            color = Color(0xFFF59E0B)
+            color = Amber
         )
     )
 
@@ -87,7 +91,7 @@ fun OnboardingScreen(
                             modifier = Modifier
                                 .size(if (pagerState.currentPage == index) 20.dp else 8.dp, 8.dp)
                                 .clip(CircleShape)
-                                .background(if (pagerState.currentPage == index) EmeraldGreen else Color.LightGray)
+                                .background(if (pagerState.currentPage == index) Emerald else Color.LightGray)
                         )
                     }
                 }
@@ -101,9 +105,9 @@ fun OnboardingScreen(
                         }
                     },
                     shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = EmeraldGreen)
+                    colors = ButtonDefaults.buttonColors(containerColor = Emerald)
                 ) {
-                    Text(if (pagerState.currentPage == 2) "Empezar" else "Siguiente")
+                    Text(if (pagerState.currentPage == 2) stringResource(R.string.setup_confirm) else stringResource(R.string.ok))
                     Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.padding(start = 8.dp))
                 }
             }

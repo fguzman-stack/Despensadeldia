@@ -28,19 +28,19 @@ class NotificationReceiver : BroadcastReceiver() {
                     return@launch
                 }
 
-                val activeProducts = db.pantryDao().getActiveProductsDirect()
+                val activeProducts = db.pantryDao().getActiveProductsDirect().filter { it.expirationDate != null }
                 val now = System.currentTimeMillis()
                 val limitExpiringSoon = now + (3L * 24 * 60 * 60 * 1000)
                 
-                val expired = activeProducts.filter { it.expirationDate < now }
-                val expiringSoon = activeProducts.filter { it.expirationDate in now..limitExpiringSoon }
+                val expired = activeProducts.filter { it.expirationDate!! < now }
+                val expiringSoon = activeProducts.filter { it.expirationDate!! in now..limitExpiringSoon }
 
                 if (expired.isNotEmpty() || expiringSoon.isNotEmpty()) {
                     val mostUrgent = expiringSoon.firstOrNull() ?: expired.firstOrNull()
                     val currencySymbol = settings?.currencySymbol ?: "$"
                     
-                    val totalValueAtRisk = (expired.sumOf { it.price * it.quantity } + 
-                                           expiringSoon.sumOf { it.price * it.quantity })
+                    val totalValueAtRisk = (expired.sumOf { it.totalPrice } + 
+                                           expiringSoon.sumOf { it.totalPrice })
 
                     showPersuasiveNotification(
                         context, 
@@ -73,7 +73,7 @@ class NotificationReceiver : BroadcastReceiver() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
-                "Avisos de Vencimiento de Alimentos",
+                "Expiry Alerts",
                 NotificationManager.IMPORTANCE_HIGH
             )
             notificationManager.createNotificationChannel(channel)
@@ -92,17 +92,17 @@ class NotificationReceiver : BroadcastReceiver() {
         val messages = mutableListOf<String>()
         
         if (productName != null) {
-            messages.add("Tus ${productName.lowercase()} están pidiendo auxilio. 🚨")
+            messages.add("Your ${productName.lowercase()} needs attention! 🚨")
         }
         
         if (valueAtRisk > 0) {
-            messages.add("Hoy puedes salvar $currencySymbol${String.format("%.2f", valueAtRisk)} consumiendo estos productos.")
+            messages.add("Save $currencySymbol${String.format("%.2f", valueAtRisk)} by using these products today.")
         } else {
-            messages.add("No dejes que tu dinero termine en la basura. 💸")
+            messages.add("Don't let your food go to waste! 💸")
         }
 
         val contentText = if (expiredCount > 0) {
-            "¡Atención! Tienes $expiredCount productos vencidos. Revisa tu despensa ahora."
+            "Heads up! You have $expiredCount expired products. Check your pantry now."
         } else {
             messages.random()
         }

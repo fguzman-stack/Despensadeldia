@@ -14,17 +14,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Kitchen
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Kitchen
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.RestaurantMenu
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
 import com.example.data.local.AppDatabase
 import com.example.data.repository.PantryRepository
 import com.example.ui.screens.DashboardScreen
@@ -32,8 +35,7 @@ import com.example.ui.screens.OnboardingScreen
 import com.example.ui.screens.SetupScreen
 import com.example.ui.screens.StatsScreen
 import com.example.ui.screens.SettingsScreen
-import com.example.ui.screens.RecipeScreen
-import com.example.data.recipe.RecipeRepository
+import com.example.ui.screens.UseFirstScreen
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.viewmodel.PantryViewModel
 import com.example.widget.PantryWidgetProvider
@@ -46,8 +48,7 @@ class MainActivity : ComponentActivity() {
         // Local SQLite Database and Repository Initialization
         val database = AppDatabase.getDatabase(this)
         val repository = PantryRepository(database.pantryDao())
-        val recipeRepository = RecipeRepository(this)
-        val viewModel = PantryViewModel(repository, recipeRepository)
+        val viewModel = PantryViewModel(repository)
 
         setContent {
             val settings by viewModel.settingsState.collectAsState()
@@ -109,9 +110,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            // Perform automatic daily checks (e.g. streaks) on app open
+            // Trigger widget update on app open
             LaunchedEffect(Unit) {
-                viewModel.checkAndRefreshStreak()
                 PantryWidgetProvider.triggerUpdate(this@MainActivity)
             }
         }
@@ -120,7 +120,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun PantryAppContainer(viewModel: PantryViewModel) {
-    var selectedTab by remember { mutableStateOf("inventory") }
+    var selectedTab by remember { mutableStateOf("use_first") }
     val context = LocalContext.current
 
     // Automatically trigger home widget updates whenever database items change
@@ -132,8 +132,27 @@ fun PantryAppContainer(viewModel: PantryViewModel) {
     Scaffold(
         bottomBar = {
             NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surface,
+                tonalElevation = 2.dp,
                 modifier = Modifier.testTag("pantry_bottom_nav_bar")
             ) {
+                NavigationBarItem(
+                    selected = selectedTab == "use_first",
+                    onClick = { selectedTab = "use_first" },
+                    label = { Text("Usa Primero") },
+                    icon = {
+                        Icon(
+                            imageVector = if (selectedTab == "use_first") Icons.Filled.Notifications else Icons.Outlined.Notifications,
+                            contentDescription = "Usa Primero"
+                        )
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                    ),
+                    modifier = Modifier.testTag("nav_item_use_first")
+                )
                 NavigationBarItem(
                     selected = selectedTab == "inventory",
                     onClick = { selectedTab = "inventory" },
@@ -144,6 +163,11 @@ fun PantryAppContainer(viewModel: PantryViewModel) {
                             contentDescription = "Inventario"
                         )
                     },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                    ),
                     modifier = Modifier.testTag("nav_item_inventory")
                 )
                 NavigationBarItem(
@@ -156,6 +180,11 @@ fun PantryAppContainer(viewModel: PantryViewModel) {
                             contentDescription = "Estadísticas"
                         )
                     },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                    ),
                     modifier = Modifier.testTag("nav_item_stats")
                 )
                 NavigationBarItem(
@@ -168,40 +197,35 @@ fun PantryAppContainer(viewModel: PantryViewModel) {
                             contentDescription = "Ajustes"
                         )
                     },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                    ),
                     modifier = Modifier.testTag("nav_item_settings")
-                )
-                NavigationBarItem(
-                    selected = selectedTab == "chef",
-                    onClick = { selectedTab = "chef" },
-                    label = { Text("Chef") },
-                    icon = {
-                        Icon(
-                            imageVector = if (selectedTab == "chef") Icons.Filled.RestaurantMenu else Icons.Outlined.RestaurantMenu,
-                            contentDescription = "Chef"
-                        )
-                    },
-                    modifier = Modifier.testTag("nav_item_chef")
                 )
             }
         }
     ) { innerPadding ->
-        when (selectedTab) {
-            "inventory" -> DashboardScreen(
-                viewModel = viewModel,
-                modifier = Modifier.padding(innerPadding)
-            )
-            "stats" -> StatsScreen(
-                viewModel = viewModel,
-                modifier = Modifier.padding(innerPadding)
-            )
-            "settings" -> SettingsScreen(
-                viewModel = viewModel,
-                modifier = Modifier.padding(innerPadding)
-            )
-            "chef" -> RecipeScreen(
-                viewModel = viewModel,
-                modifier = Modifier.padding(innerPadding)
-            )
+        Crossfade(targetState = selectedTab, animationSpec = tween(300)) { tab ->
+            when (tab) {
+                "use_first" -> UseFirstScreen(
+                    viewModel = viewModel,
+                    modifier = Modifier.padding(innerPadding)
+                )
+                "inventory" -> DashboardScreen(
+                    viewModel = viewModel,
+                    modifier = Modifier.padding(innerPadding)
+                )
+                "stats" -> StatsScreen(
+                    viewModel = viewModel,
+                    modifier = Modifier.padding(innerPadding)
+                )
+                "settings" -> SettingsScreen(
+                    viewModel = viewModel,
+                    modifier = Modifier.padding(innerPadding)
+                )
+            }
         }
     }
 }

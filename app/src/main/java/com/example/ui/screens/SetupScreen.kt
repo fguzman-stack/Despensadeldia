@@ -18,10 +18,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.ui.viewmodel.PantryViewModel
 
 data class CountryPreset(
@@ -36,26 +38,30 @@ fun SetupScreen(
     viewModel: PantryViewModel,
     onSetupComplete: () -> Unit
 ) {
+    val useDeviceMode = stringResource(R.string.setup_use_device)
+    val manualMode = stringResource(R.string.setup_manual)
+
     val presets = listOf(
-        CountryPreset("🇪🇸 España", "EUR", "€"),
-        CountryPreset("🇲🇽 México", "MXN", "$"),
+        CountryPreset(manualMode, "USD", "$"),
+        CountryPreset("🇪🇸 Spain", "EUR", "€"),
+        CountryPreset("🇲🇽 Mexico", "MXN", "$"),
         CountryPreset("🇨🇴 Colombia", "COP", "$"),
         CountryPreset("🇦🇷 Argentina", "ARS", "$"),
         CountryPreset("🇨🇱 Chile", "CLP", "$"),
-        CountryPreset("🇵🇪 Perú", "PEN", "S/."),
-        CountryPreset("🇺🇸 Estados Unidos", "USD", "$"),
+        CountryPreset("🇵🇪 Peru", "PEN", "S/."),
+        CountryPreset("🇺🇸 United States", "USD", "$"),
         CountryPreset("🇻🇪 Venezuela", "VES", "Bs.D"),
         CountryPreset("🇺🇾 Uruguay", "UYU", "$"),
-        CountryPreset("🇧🇷 Brasil", "BRL", "R$"),
+        CountryPreset("🇧🇷 Brazil", "BRL", "R$"),
         CountryPreset("🇪🇨 Ecuador", "USD", "$"),
         CountryPreset("🇵🇾 Paraguay", "PYG", "Gs."),
         CountryPreset("🇧🇴 Bolivia", "BOB", "Bs."),
         CountryPreset("🇬🇹 Guatemala", "GTQ", "Q"),
         CountryPreset("🇨🇷 Costa Rica", "CRC", "₡"),
         CountryPreset("🇨🇺 Cuba", "CUP", "$"),
-        CountryPreset("🇩🇴 República Dominicana", "DOP", "$"),
-        CountryPreset("🇵🇦 Panamá", "PAB", "B/."),
-        CountryPreset("Otro / Personalizado", "USD", "$")
+        CountryPreset("🇩🇴 Dominican Republic", "DOP", "$"),
+        CountryPreset("🇵🇦 Panama", "PAB", "B/."),
+        CountryPreset("Other / Custom", "USD", "$")
     )
 
     var selectedPresetIndex by remember { mutableStateOf(0) }
@@ -64,23 +70,33 @@ fun SetupScreen(
     var customCurrencySymbol by remember { mutableStateOf("") }
 
     val currentPreset = presets[selectedPresetIndex]
+    val isCustomMode = currentPreset.name == "Other / Custom"
 
-    val finalCountry = if (currentPreset.name == "Otro / Personalizado") customCountry else currentPreset.name
-    val finalCode = if (currentPreset.name == "Otro / Personalizado") customCurrencyCode else currentPreset.currencyCode
-    val finalSymbol = if (currentPreset.name == "Otro / Personalizado") customCurrencySymbol else currentPreset.currencySymbol
+    val finalCountry = if (isCustomMode) customCountry else {
+        if (currentPreset.name == useDeviceMode) "" else currentPreset.name
+    }
+    val finalCode = if (isCustomMode) customCurrencyCode else currentPreset.currencyCode
+    val finalSymbol = if (isCustomMode) customCurrencySymbol else currentPreset.currencySymbol
 
-    val isFormValid = if (currentPreset.name == "Otro / Personalizado") {
+    val isFormValid = if (isCustomMode) {
         customCountry.isNotBlank() && customCurrencyCode.isNotBlank() && customCurrencySymbol.isNotBlank()
     } else {
         true
     }
 
     var dropdownExpanded by remember { mutableStateOf(false) }
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = MaterialTheme.colorScheme.primary,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+        focusedContainerColor = MaterialTheme.colorScheme.surface,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+        cursorColor = MaterialTheme.colorScheme.primary
+    )
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Configuración Inicial", fontWeight = FontWeight.Bold) }
+                title = { Text(stringResource(R.string.setup_title), fontWeight = FontWeight.Bold) }
             )
         }
     ) { innerPadding ->
@@ -110,14 +126,14 @@ fun SetupScreen(
             }
 
             Text(
-                text = "¡Personalicemos tu Despensa!",
+                text = stringResource(R.string.setup_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
 
             Text(
-                text = "Selecciona tu país de residencia para configurar automáticamente la moneda con la que calcularás tu dinero ahorrado.",
+                text = stringResource(R.string.setup_message),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -125,7 +141,7 @@ fun SetupScreen(
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
 
-            // Country selector Dropdown
+            // Mode selector Dropdown
             ExposedDropdownMenuBox(
                 expanded = dropdownExpanded,
                 onExpandedChange = { dropdownExpanded = !dropdownExpanded },
@@ -135,13 +151,13 @@ fun SetupScreen(
                     value = currentPreset.name,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("País / Región") },
+                    label = { Text(stringResource(R.string.setup_country)) },
+                    colors = fieldColors,
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
                     modifier = Modifier
                         .menuAnchor()
                         .fillMaxWidth()
-                        .testTag("country_dropdown_input"),
-                    colors = OutlinedTextFieldDefaults.colors()
+                        .testTag("country_dropdown_input")
                 )
                 ExposedDropdownMenu(
                     expanded = dropdownExpanded,
@@ -152,7 +168,7 @@ fun SetupScreen(
                             text = { Text(preset.name) },
                             onClick = {
                                 selectedPresetIndex = index
-                                if (preset.name == "Otro / Personalizado") {
+                                if (preset.name == "Other / Custom") {
                                     customCountry = ""
                                     customCurrencyCode = "USD"
                                     customCurrencySymbol = "$"
@@ -164,13 +180,14 @@ fun SetupScreen(
                 }
             }
 
-            // Custom inputs if "Otro / Personalizado" is chosen
-            if (currentPreset.name == "Otro / Personalizado") {
+            // Custom inputs if "Other / Custom" is chosen
+            if (isCustomMode) {
                 OutlinedTextField(
                     value = customCountry,
                     onValueChange = { customCountry = it },
-                    label = { Text("Nombre del País") },
+                    label = { Text(stringResource(R.string.country_label)) },
                     singleLine = true,
+                    colors = fieldColors,
                     modifier = Modifier.fillMaxWidth().testTag("custom_country_input")
                 )
 
@@ -181,21 +198,22 @@ fun SetupScreen(
                     OutlinedTextField(
                         value = customCurrencyCode,
                         onValueChange = { customCurrencyCode = it.take(3).uppercase() },
-                        label = { Text("Código de Moneda (ej: EUR)") },
+                        label = { Text(stringResource(R.string.setup_currency_code)) },
                         singleLine = true,
+                        colors = fieldColors,
                         modifier = Modifier.weight(1f).testTag("custom_currency_code_input")
                     )
 
                     OutlinedTextField(
                         value = customCurrencySymbol,
                         onValueChange = { customCurrencySymbol = it.take(4) },
-                        label = { Text("Símbolo (ej: €)") },
+                        label = { Text(stringResource(R.string.setup_currency_symbol)) },
                         singleLine = true,
+                        colors = fieldColors,
                         modifier = Modifier.weight(1f).testTag("custom_currency_symbol_input")
                     )
                 }
-            } else {
-                // Read-only indicator of preselected currency
+            } else if (currentPreset.name != useDeviceMode) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
@@ -215,7 +233,7 @@ fun SetupScreen(
                         )
                         Column {
                             Text(
-                                text = "Moneda Configurará automáticamente:",
+                                text = stringResource(R.string.setup_currency_code),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -248,11 +266,15 @@ fun SetupScreen(
                     .fillMaxWidth()
                     .height(56.dp)
                     .testTag("save_setup_button"),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
             ) {
                 Icon(imageVector = Icons.Filled.Check, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Confirmar y Continuar", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.setup_confirm), fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

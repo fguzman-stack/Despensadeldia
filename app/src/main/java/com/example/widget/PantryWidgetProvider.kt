@@ -24,7 +24,7 @@ class PantryWidgetProvider : AppWidgetProvider() {
             try {
                 val db = AppDatabase.getDatabase(context)
                 // Obtenemos los 3 productos más urgentes
-                val activeProducts = db.pantryDao().getActiveProductsDirect().take(3)
+                val activeProducts = db.pantryDao().getActiveProductsDirect().filter { it.expirationDate != null }.take(3)
                 
                 for (appWidgetId in appWidgetIds) {
                     val views = RemoteViews(context.packageName, R.layout.pantry_widget)
@@ -46,14 +46,14 @@ class PantryWidgetProvider : AppWidgetProvider() {
                         val itemIds = listOf(R.id.widget_item1, R.id.widget_item2, R.id.widget_item3)
                         
                         activeProducts.forEachIndexed { index, product ->
-                            val diff = product.expirationDate - now
+                            val diff = product.expirationDate!! - now
                             val days = (diff / (24 * 60 * 60 * 1000)).toInt()
                             
                             val statusText = when {
-                                days < 0 -> "Vencido"
-                                days == 0 -> "¡HOY! ⚠️"
-                                days == 1 -> "Mañana"
-                                else -> "$days días"
+                                days < 0 -> context.getString(R.string.widget_expired)
+                                days == 0 -> context.getString(R.string.widget_due_today)
+                                days == 1 -> context.getString(R.string.widget_due_tomorrow)
+                                else -> "$days ${context.getString(R.string.days)}"
                             }
                             
                             views.setTextViewText(itemIds[index], "• ${product.name} ($statusText)")
