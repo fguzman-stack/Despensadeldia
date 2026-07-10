@@ -30,6 +30,7 @@ import com.example.R
 import com.example.data.local.ExpiryType
 import com.example.data.local.Product
 import com.example.data.local.ProductCategory
+import com.example.data.local.ProductFrequent
 import com.example.data.local.ProductLocation
 import com.example.ui.ads.AdManager
 import com.example.ui.ads.AdState
@@ -275,7 +276,16 @@ fun DashboardScreen(
                                     }
                                 }
                             },
-                            onEdit = { productToEdit = product }
+                            onEdit = { productToEdit = product },
+                            onAddToShoppingList = {
+                                viewModel.addShoppingItemFromProduct(product)
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "${product.name} agregado a la lista",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            }
                         )
                     }
 
@@ -316,7 +326,16 @@ fun DashboardScreen(
                                     }
                                 }
                             },
-                            onEdit = { productToEdit = product }
+                            onEdit = { productToEdit = product },
+                            onAddToShoppingList = {
+                                viewModel.addShoppingItemFromProduct(product)
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "${product.name} agregado a la lista",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            }
                         )
                     }
                 }
@@ -324,12 +343,15 @@ fun DashboardScreen(
         }
     }
 
+    val frequentProducts by viewModel.frequentProductsState.collectAsState()
+
     if (showAddDialog) {
         AddEditProductDialog(
             viewModel = viewModel,
             currencySymbol = currencySymbol,
+            frequentProducts = frequentProducts,
             onDismiss = { showAddDialog = false },
-            onConfirm = { name, cat, price, qty, unit, location, expiryType, expDate, barcode, notes, brand ->
+            onConfirm = { name, cat, price, qty, unit, location, expiryType, expDate, barcode, notes, brand, minStock ->
                 viewModel.addProduct(name, cat, price, qty, unit, location, expiryType, expDate, barcode, notes, brand)
                 showAddDialog = false
             }
@@ -342,7 +364,7 @@ fun DashboardScreen(
             product = productToEdit,
             currencySymbol = currencySymbol,
             onDismiss = { productToEdit = null },
-            onConfirm = { name, cat, price, qty, unit, location, expiryType, expDate, barcode, notes, brand ->
+            onConfirm = { name, cat, price, qty, unit, location, expiryType, expDate, barcode, notes, brand, minStock ->
                 viewModel.updateProduct(productToEdit!!.id, name, cat, price, qty, unit, location, expiryType, expDate, barcode, notes, brand)
                 productToEdit = null
             }
@@ -364,7 +386,8 @@ fun SwipeableProductItem(
     currencySymbol: String,
     onConsume: () -> Unit,
     onWaste: () -> Unit,
-    onEdit: () -> Unit
+    onEdit: () -> Unit,
+    onAddToShoppingList: (() -> Unit)? = null
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = {
@@ -423,7 +446,7 @@ fun SwipeableProductItem(
             }
         },
         content = {
-            ProductCard(product, currencySymbol, onEdit)
+            ProductCard(product, currencySymbol, onEdit, onAddToShoppingList)
         }
     )
 }
@@ -432,7 +455,8 @@ fun SwipeableProductItem(
 fun ProductCard(
     product: Product,
     currencySymbol: String,
-    onEdit: () -> Unit
+    onEdit: () -> Unit,
+    onAddToShoppingList: (() -> Unit)? = null
 ) {
     val now = System.currentTimeMillis()
     val daysRemaining = product.expirationDate?.let {
@@ -511,6 +535,33 @@ fun ProductCard(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.outline
                 )
+                if (product.minimumStock != null && product.quantity <= product.minimumStock) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Surface(
+                        onClick = { onAddToShoppingList?.invoke() },
+                        shape = RoundedCornerShape(6.dp),
+                        color = Amber.copy(alpha = 0.15f)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.ShoppingCart,
+                                contentDescription = null,
+                                tint = Amber,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = stringResource(R.string.low_stock),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Amber
+                            )
+                        }
+                    }
+                }
             }
 
             Column(horizontalAlignment = Alignment.End) {
@@ -598,11 +649,12 @@ fun AddEditProductDialog(
     viewModel: PantryViewModel,
     product: Product? = null,
     currencySymbol: String,
+    frequentProducts: List<ProductFrequent> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (
         name: String, category: ProductCategory, totalPrice: Double, quantity: Double, unit: String,
         location: ProductLocation, expiryType: ExpiryType, expirationDate: Long?,
-        barcode: String?, notes: String?, brand: String?
+        barcode: String?, notes: String?, brand: String?, minimumStock: Double?
     ) -> Unit
 ) {
     val lastLocation by viewModel.lastUsedLocation.collectAsState()
@@ -618,6 +670,7 @@ fun AddEditProductDialog(
     var expiryType by remember { mutableStateOf(product?.expiryType ?: ExpiryType.FIXED) }
     var notes by remember { mutableStateOf(product?.notes ?: "") }
     var brand by remember { mutableStateOf(product?.brand ?: "") }
+    var minStockStr by remember { mutableStateOf(product?.minimumStock?.toString() ?: "") }
 
     val calendar = Calendar.getInstance()
     if (product?.expirationDate != null) {
@@ -662,7 +715,8 @@ fun AddEditProductDialog(
                         quantityStr.toDoubleOrNull() ?: 1.0,
                         unit, location, expiryType,
                         if (expiryType == ExpiryType.NONE) null else selectedDateInMillis,
-                        null, notes.ifBlank { null }, brand.ifBlank { null }
+                        null, notes.ifBlank { null }, brand.ifBlank { null },
+                        minStockStr.toDoubleOrNull()
                     )
                 },
                 enabled = isValid
@@ -671,6 +725,46 @@ fun AddEditProductDialog(
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                // Frequent products (only for new products)
+                if (product == null && frequentProducts.isNotEmpty()) {
+                    Text(
+                        text = stringResource(R.string.frequent_products),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        items(frequentProducts) { fp ->
+                            AssistChip(
+                                onClick = {
+                                    name = fp.name
+                                    category = fp.category
+                                    location = fp.location
+                                    unit = fp.unit
+                                    if (fp.brand != null) brand = fp.brand
+                                    if (fp.lastPrice > 0) priceStr = fp.lastPrice.toString()
+                                },
+                                label = {
+                                    Text(
+                                        fp.name,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        maxLines = 1,
+                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                    )
+                                },
+                                leadingIcon = {
+                                    Text(
+                                        "${fp.count}×",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                },
+                                shape = RoundedCornerShape(10.dp)
+                            )
+                        }
+                    }
+                }
+
                 // Quick templates (only for new products)
                 if (product == null) {
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -855,6 +949,17 @@ fun AddEditProductDialog(
                         onValueChange = { brand = it },
                         label = { Text(stringResource(R.string.brand_optional)) },
                         colors = fieldColors,
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    OutlinedTextField(
+                        value = minStockStr,
+                        onValueChange = { minStockStr = it },
+                        label = { Text(stringResource(R.string.minimum_stock_label)) },
+                        placeholder = { Text(stringResource(R.string.minimum_stock_placeholder)) },
+                        colors = fieldColors,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )

@@ -156,6 +156,7 @@
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Oscuro</string>
+    <string name="theme_astral">Astral</string>
     <string name="section_data">Datos y Respaldo</string>
     <string name="data_description">Exporta tus datos para guardarlos o analizarlos.</string>
     <string name="export_json">Respaldo JSON</string>
@@ -183,6 +184,39 @@
     <string name="today">Hoy</string>
     <string name="tomorrow">Mañana</string>
     <string name="yesterday">Ayer</string>
+
+    <!-- Quick Review -->
+    <string name="quick_review_trigger">Revisión rápida</string>
+    <string name="quick_review_title">Revisión rápida</string>
+    <string name="quick_review_progress">%1$d de %2$d</string>
+    <string name="quick_review_skip">Ahora no</string>
+    <string name="quick_review_done_title">¡Todo listo!</string>
+    <string name="quick_review_done_body">Resolviste %1$d de %2$d productos.</string>
+    <string name="quick_review_value_saved">Valor aprovechado</string>
+    <string name="quick_review_skipped">%1$d productos quedan pendientes</string>
+    <string name="quick_review_close">Cerrar</string>
+
+    <!-- Frequent Products -->
+    <string name="frequent_products">Productos frecuentes</string>
+
+    <!-- Low Stock -->
+    <string name="low_stock">Stock bajo</string>
+    <string name="minimum_stock_label">Avisarme si hay menos de</string>
+    <string name="minimum_stock_placeholder">Cant. mínima</string>
+
+    <!-- Weekly Summary -->
+    <string name="weekly_title">Esta semana</string>
+    <string name="weekly_subtitle">¡Te ocupaste de %1$d productos!</string>
+    <string name="weekly_value_saved">Valor aprovechado:</string>
+    <string name="top_wasted">Más desperdiciado</string>
+
+    <!-- Before Buying -->
+    <string name="before_buying_button">Revisar lo que ya tienes</string>
+    <string name="before_buying_title">Ya tienes</string>
+    <string name="before_buying_subtitle">%1$d artículos ya están en tu despensa</string>
+    <string name="before_buying_none">Sin coincidencias</string>
+    <string name="before_buying_already_have">Ya en despensa: %1$s</string>
+    <string name="before_buying_not_found">No está en inventario</string>
 
     <string name="widget_emoji">📋</string>
     <string name="widget_expired">Vencido</string>

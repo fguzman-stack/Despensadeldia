@@ -107,6 +107,9 @@ interface PantryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertShoppingItem(item: ShoppingItem)
 
+    @Query("SELECT * FROM shopping_items WHERE name = :name COLLATE NOCASE LIMIT 1")
+    suspend fun getShoppingItemByNameNormalized(name: String): ShoppingItem?
+
     @Update
     suspend fun updateShoppingItem(item: ShoppingItem)
 

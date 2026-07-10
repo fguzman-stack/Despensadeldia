@@ -6,14 +6,17 @@ import com.example.data.local.AppSettings
 import com.example.data.local.ExpiryType
 import com.example.data.local.Product
 import com.example.data.local.ProductCategory
+import com.example.data.local.ProductFrequent
 import com.example.data.local.ProductLocation
 import com.example.data.local.ProductStatus
 import com.example.data.repository.PantryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class PantryViewModel(
     private val repository: PantryRepository
@@ -59,6 +62,33 @@ class PantryViewModel(
     val lastUsedLocation = MutableStateFlow(ProductLocation.PANTRY)
     val lastUsedCategory = MutableStateFlow(ProductCategory.PRODUCE)
     val lastUsedUnit = MutableStateFlow("uds")
+
+    // ─── Frequent products ──────────────────────────────────────────
+
+    val frequentProductsState: StateFlow<List<ProductFrequent>> = repository.allProducts
+        .map { products ->
+            products.groupBy {
+                it.name.trim().lowercase(Locale.ROOT)
+            }.map { (_, group) ->
+                val latest = group.maxByOrNull { it.addedDate } ?: return@map null
+                ProductFrequent(
+                    name = latest.name,
+                    category = latest.category,
+                    location = latest.location,
+                    unit = latest.unit,
+                    brand = latest.brand,
+                    lastPrice = latest.totalPrice,
+                    count = group.size
+                )
+            }.filterNotNull()
+                .sortedByDescending { it.count }
+                .take(8)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     // ─── Settings ──────────────────────────────────────────────────
 
@@ -256,6 +286,8 @@ class PantryViewModel(
         sourceProductId: Int? = null
     ) {
         viewModelScope.launch {
+            val existing = repository.getShoppingItemByNameNormalized(name)
+            if (existing != null) return@launch
             repository.insertShoppingItem(
                 com.example.data.local.ShoppingItem(
                     name = name,
@@ -269,6 +301,18 @@ class PantryViewModel(
                 )
             )
         }
+    }
+
+    fun addShoppingItemFromProduct(product: Product) {
+        addShoppingItem(
+            name = product.name,
+            category = product.category,
+            quantity = product.quantity,
+            unit = product.unit,
+            location = product.location,
+            preferredBrand = product.brand,
+            sourceProductId = product.id
+        )
     }
 
     fun toggleShoppingItem(item: com.example.data.local.ShoppingItem, isChecked: Boolean) {

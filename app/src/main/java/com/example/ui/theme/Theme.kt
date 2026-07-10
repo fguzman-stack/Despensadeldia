@@ -69,11 +69,46 @@ private val DarkColorScheme = darkColorScheme(
   surfaceTint = EmeraldLight
 )
 
+private val AstralColorScheme = darkColorScheme(
+  primary = AstralAction,
+  onPrimary = Color(0xFF00382A),
+  primaryContainer = Color(0xFF005139),
+  onPrimaryContainer = Color(0xFFB2F2DA),
+  secondary = AstralAttention,
+  onSecondary = Color(0xFF3D2E00),
+  secondaryContainer = Color(0xFF5C4000),
+  onSecondaryContainer = Color(0xFFFFE1A0),
+  tertiary = AstralDonation,
+  onTertiary = Color(0xFF311A5E),
+  tertiaryContainer = Color(0xFF4A3077),
+  onTertiaryContainer = Color(0xFFE8D6FF),
+  error = AstralUrgency,
+  onError = Color(0xFF410002),
+  errorContainer = Color(0xFF6E1818),
+  onErrorContainer = Color(0xFFFFDAD6),
+  background = AstralBackground,
+  onBackground = AstralTextPrimary,
+  surface = AstralSurface,
+  onSurface = AstralTextPrimary,
+  surfaceVariant = AstralSurfaceVariant,
+  onSurfaceVariant = AstralTextSecondary,
+  outline = AstralBorder,
+  outlineVariant = Color(0xFF414B7A),
+  inverseSurface = Color(0xFFF1F3FF),
+  inverseOnSurface = Color(0xFF080A18),
+  inversePrimary = Color(0xFF005139),
+  surfaceTint = AstralAccent
+)
+
 @Composable
 fun MyApplicationTheme(
   darkTheme: Boolean = isSystemInDarkTheme(),
+  userTheme: String = "SYSTEM",
   content: @Composable () -> Unit,
 ) {
-  val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+  val colorScheme = when (userTheme) {
+    "ASTRAL" -> AstralColorScheme
+    else -> if (darkTheme) DarkColorScheme else LightColorScheme
+  }
   MaterialTheme(colorScheme = colorScheme, typography = Typography, content = content)
 }

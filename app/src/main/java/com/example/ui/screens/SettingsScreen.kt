@@ -235,7 +235,8 @@ fun SettingsScreen(
                     val themes = listOf(
                         Triple("SYSTEM", stringResource(R.string.theme_system), Icons.Filled.SettingsSystemDaydream),
                         Triple("LIGHT", stringResource(R.string.theme_light), Icons.Filled.LightMode),
-                        Triple("DARK", stringResource(R.string.theme_dark), Icons.Filled.DarkMode)
+                        Triple("DARK", stringResource(R.string.theme_dark), Icons.Filled.DarkMode),
+                        Triple("ASTRAL", stringResource(R.string.theme_astral), Icons.Filled.NightsStay)
                     )
 
                     themes.forEach { (themeCode, themeLabel, themeIcon) ->

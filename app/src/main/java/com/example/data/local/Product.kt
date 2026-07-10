@@ -20,5 +20,6 @@ data class Product(
     val barcode: String? = null,
     val notes: String? = null,
     val brand: String? = null,
-    val snoozeUntil: Long? = null
+    val snoozeUntil: Long? = null,
+    val minimumStock: Double? = null
 )

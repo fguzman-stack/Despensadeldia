@@ -24,9 +24,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.example.R
+import com.example.data.local.Product
 import com.example.data.local.ProductCategory
 import com.example.data.local.ShoppingItem
 import com.example.ui.theme.Emerald
+import com.example.ui.theme.Amber
 import com.example.ui.viewmodel.PantryViewModel
 import kotlinx.coroutines.launch
 
@@ -41,8 +43,11 @@ fun ShoppingListSheet(
     val context = LocalContext.current
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    
+
     var showAddItemDialog by remember { mutableStateOf(false) }
+    var showBeforeBuying by remember { mutableStateOf(false) }
+
+    val activeProducts by viewModel.activeProductsState.collectAsState()
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -69,7 +74,7 @@ fun ShoppingListSheet(
                 Row {
                     IconButton(onClick = {
                         val textToShare = buildString {
-                            appendLine("🛍️ *Shopping List*")
+                            appendLine("Shopping List")
                             appendLine()
                             val unchecked = items.filter { !it.isChecked }
                             if (unchecked.isEmpty()) {
@@ -79,13 +84,12 @@ fun ShoppingListSheet(
                                     if (category.name.isNotEmpty()) appendLine("*${category.name}*")
                                     categoryItems.forEach {
                                         val qty = if (it.quantity == it.quantity.toLong().toDouble()) it.quantity.toLong().toString() else it.quantity.toString()
-                                        appendLine("• ${it.name} ($qty ${it.unit})")
+                                        appendLine("- ${it.name} ($qty ${it.unit})")
                                     }
                                     appendLine()
                                 }
                             }
                         }
-                        
                         val sendIntent = Intent(Intent.ACTION_SEND).apply {
                             type = "text/plain"
                             putExtra(Intent.EXTRA_TEXT, textToShare)
@@ -94,7 +98,7 @@ fun ShoppingListSheet(
                     }) {
                         Icon(Icons.Filled.Share, contentDescription = stringResource(R.string.share_list))
                     }
-                    
+
                     if (items.any { it.isChecked }) {
                         IconButton(onClick = { viewModel.deleteCheckedShoppingItems() }) {
                             Icon(Icons.Filled.DeleteSweep, contentDescription = stringResource(R.string.clean_checked))
@@ -118,6 +122,20 @@ fun ShoppingListSheet(
                 Text(stringResource(R.string.add_to_list))
             }
 
+            // Before buying check
+            if (items.any { !it.isChecked }) {
+                TextButton(
+                    onClick = { showBeforeBuying = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.before_buying_button))
+                }
+            }
+
             if (items.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
@@ -132,10 +150,9 @@ fun ShoppingListSheet(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Group by category, but checked items go at the bottom
                     val unchecked = items.filter { !it.isChecked }.groupBy { it.category }
                     val checked = items.filter { it.isChecked }
-                    
+
                     unchecked.forEach { (category, categoryItems) ->
                         if (category.name.isNotEmpty()) {
                             item {
@@ -147,7 +164,7 @@ fun ShoppingListSheet(
                                 )
                             }
                         }
-                        
+
                         items(categoryItems, key = { it.id }) { item ->
                             ShoppingItemRow(
                                 item = item,
@@ -156,7 +173,7 @@ fun ShoppingListSheet(
                             )
                         }
                     }
-                    
+
                     if (checked.isNotEmpty()) {
                         item {
                             Text(
@@ -178,12 +195,20 @@ fun ShoppingListSheet(
             }
         }
     }
-    
+
+    if (showBeforeBuying) {
+        BeforeBuyingSheet(
+            shoppingItems = items.filter { !it.isChecked },
+            activeProducts = activeProducts,
+            onDismiss = { showBeforeBuying = false }
+        )
+    }
+
     if (showAddItemDialog) {
         var name by remember { mutableStateOf("") }
         var quantityStr by remember { mutableStateOf("1") }
         var unit by remember { mutableStateOf("uds") }
-        
+
         AlertDialog(
             onDismissRequest = { showAddItemDialog = false },
             title = { Text(stringResource(R.string.add_item)) },
@@ -237,6 +262,151 @@ fun ShoppingListSheet(
     }
 }
 
+private fun normalizeName(name: String): String =
+    name.trim().uppercase().replace(Regex("\\s+"), " ")
+
+private fun findMatch(
+    shoppingName: String,
+    activeProducts: List<Product>
+): Product? {
+    val normalized = normalizeName(shoppingName)
+    return activeProducts.find { normalizeName(it.name) == normalized }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BeforeBuyingSheet(
+    shoppingItems: List<ShoppingItem>,
+    activeProducts: List<Product>,
+    onDismiss: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    val matches = remember(shoppingItems, activeProducts) {
+        shoppingItems.map { item ->
+            item to findMatch(item.name, activeProducts)
+        }
+    }
+
+    val matchCount = matches.count { it.second != null }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        dragHandle = { BottomSheetDefaults.DragHandle() },
+        modifier = Modifier.fillMaxHeight(0.7f)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Filled.Search,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(
+                        text = stringResource(R.string.before_buying_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    if (matchCount > 0) {
+                        Text(
+                            text = stringResource(R.string.before_buying_subtitle, matchCount),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Emerald
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(R.string.before_buying_none),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            Divider(modifier = Modifier.padding(horizontal = 16.dp))
+
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(matches, key = { it.first.id }) { (item, product) ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (product != null)
+                                Amber.copy(alpha = 0.08f)
+                            else
+                                MaterialTheme.colorScheme.surface
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = if (product != null) Icons.Filled.Inventory else Icons.Filled.ShoppingCart,
+                                contentDescription = null,
+                                tint = if (product != null) Amber else MaterialTheme.colorScheme.outline,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = item.name,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                if (product != null) {
+                                    val qty = if (product.quantity == product.quantity.toLong().toDouble())
+                                        product.quantity.toLong().toString()
+                                    else product.quantity.toString()
+                                    Text(
+                                        text = stringResource(R.string.before_buying_already_have, "$qty ${product.unit}"),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Amber,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                } else {
+                                    Text(
+                                        text = stringResource(R.string.before_buying_not_found),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.outline
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Button(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(stringResource(R.string.understood))
+            }
+        }
+    }
+}
+
 @Composable
 fun ShoppingItemRow(
     item: ShoppingItem,
@@ -247,7 +417,7 @@ fun ShoppingItemRow(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (item.isChecked) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) 
+            containerColor = if (item.isChecked) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                              else MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = if (item.isChecked) 0.dp else 1.dp)
@@ -261,7 +431,7 @@ fun ShoppingItemRow(
                 onCheckedChange = onCheckedChange,
                 colors = CheckboxDefaults.colors(checkedColor = Emerald)
             )
-            
+
             Column(modifier = Modifier.weight(1f).padding(horizontal = 8.dp)) {
                 Text(
                     text = item.name,
@@ -277,7 +447,7 @@ fun ShoppingItemRow(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            
+
             IconButton(onClick = onDelete) {
                 Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.cancel), tint = MaterialTheme.colorScheme.outline)
             }

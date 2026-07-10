@@ -94,6 +94,7 @@ fun UseFirstScreen(
 
     var productToResolve by remember { mutableStateOf<Product?>(null) }
     var productToSnooze by remember { mutableStateOf<Product?>(null) }
+    var showQuickReview by remember { mutableStateOf(false) }
 
     val currencySymbol = settings.currencySymbol.ifEmpty { "$" }
 
@@ -129,6 +130,33 @@ fun UseFirstScreen(
                             expiredCount = expired.size,
                             todayCount = expiringToday.size
                         )
+                    }
+
+                    if (hasUrgentItems) {
+                        item {
+                            FilledTonalButton(
+                                onClick = { showQuickReview = true },
+                                modifier = Modifier.fillMaxWidth().height(52.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = ButtonDefaults.filledTonalButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            ) {
+                                Icon(
+                                    Icons.Filled.PlayArrow,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    stringResource(R.string.quick_review_trigger),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
                     }
 
                     if (expired.isNotEmpty()) {
@@ -270,6 +298,15 @@ fun UseFirstScreen(
         )
     }
 
+    if (showQuickReview) {
+        ReviewQuickSheet(
+            urgentProducts = expired + expiringToday + expiringTomorrow + expiringThisWeek,
+            currencySymbol = currencySymbol,
+            viewModel = viewModel,
+            onDismiss = { showQuickReview = false }
+        )
+    }
+
     if (productToSnooze != null) {
         val product = productToSnooze!!
         val snoozeTemplate = stringResource(R.string.snackbar_snoozed)
@@ -291,8 +328,16 @@ fun UseFirstScreen(
 
 @Composable
 fun AmbientGradientBackground() {
-    val isDark = MaterialTheme.colorScheme.background == Color(0xFF101814)
-    val colors = if (isDark) {
+    val bg = MaterialTheme.colorScheme.background
+    val isAstral = bg == Color(0xFF080A18)
+    val isDark = bg == Color(0xFF101814) || isAstral
+    val colors = if (isAstral) {
+        listOf(
+            Color(0xFF080A18),
+            Color(0xFF0C0F24),
+            Color(0xFF0A0C1E)
+        )
+    } else if (isDark) {
         listOf(
             Color(0xFF101814),
             Color(0xFF0F1F16),
@@ -324,9 +369,11 @@ fun UrgencyHeroCard(
     expiredCount: Int,
     todayCount: Int
 ) {
-    val isDark = MaterialTheme.colorScheme.background == Color(0xFF101814)
-    val gradientStart = if (isDark) Color(0xFF1A3A2A) else Color(0xFFE8F5EE)
-    val gradientEnd = if (isDark) Color(0xFF1E3028) else Color(0xFFF5F0E0)
+    val bg = MaterialTheme.colorScheme.background
+    val isAstral = bg == Color(0xFF080A18)
+    val isDark = bg == Color(0xFF101814) || isAstral
+    val gradientStart = if (isAstral) Color(0xFF1A2040) else if (isDark) Color(0xFF1A3A2A) else Color(0xFFE8F5EE)
+    val gradientEnd = if (isAstral) Color(0xFF141A33) else if (isDark) Color(0xFF1E3028) else Color(0xFFF5F0E0)
 
     val animatedCount by animateIntAsState(
         targetValue = totalUrgent,

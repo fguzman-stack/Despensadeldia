@@ -80,6 +80,8 @@ class PantryRepository(private val pantryDao: PantryDao) {
     suspend fun getAllProductsDirect(): List<Product> =
         pantryDao.getAllProductsDirect()
 
+    val allProducts: Flow<List<Product>> = pantryDao.getAllProducts()
+
     suspend fun deleteAllProducts() {
         pantryDao.deleteAllProducts()
     }
@@ -90,6 +92,11 @@ class PantryRepository(private val pantryDao: PantryDao) {
 
     suspend fun insertShoppingItem(item: ShoppingItem) {
         pantryDao.insertShoppingItem(item)
+    }
+
+    suspend fun getShoppingItemByNameNormalized(name: String): ShoppingItem? {
+        val normalized = name.trim().uppercase().replace(Regex("\\s+"), " ")
+        return pantryDao.getShoppingItemByNameNormalized(normalized)
     }
 
     suspend fun updateShoppingItem(item: ShoppingItem) {

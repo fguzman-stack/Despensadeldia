@@ -128,6 +128,35 @@ fun StatsScreen(
         it.expirationDate != null && it.expirationDate < now
     }
 
+    // Weekly stats
+    val startOfWeek = Calendar.getInstance().apply {
+        add(Calendar.DAY_OF_YEAR, -6)
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+
+    val weeklyConsumed = consumedProducts.filter {
+        it.resolvedDate != null && it.resolvedDate >= startOfWeek
+    }
+    val weeklyWasted = wastedProducts.filter {
+        it.resolvedDate != null && it.resolvedDate >= startOfWeek
+    }
+    val weeklyDonated = donatedProducts.filter {
+        it.resolvedDate != null && it.resolvedDate >= startOfWeek
+    }
+
+    val weeklyConsumedCount = weeklyConsumed.size
+    val weeklyWastedCount = weeklyWasted.size
+    val weeklyDonatedCount = weeklyDonated.size
+    val weeklyResolvedCount = weeklyConsumedCount + weeklyWastedCount + weeklyDonatedCount
+    val weeklyValueSaved = weeklyConsumed.sumOf { it.totalPrice } + weeklyDonated.sumOf { it.totalPrice }
+
+    val topWastedCategory = weeklyWasted.groupBy { it.category }
+        .maxByOrNull { it.value.size }
+        ?.key
+
     val monthName = Calendar.getInstance().getDisplayName(Calendar.MONTH, Calendar.LONG, Locale("es")) ?: "Este mes"
 
     Scaffold(modifier = modifier) { innerPadding ->
@@ -139,6 +168,82 @@ fun StatsScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
+            // ─── Weekly summary card ───────────────────────────────
+            if (weeklyResolvedCount > 0) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Emerald.copy(alpha = 0.08f)
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Filled.TrendingUp,
+                                contentDescription = null,
+                                tint = Emerald,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.weekly_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = Emerald
+                            )
+                        }
+
+                        Text(
+                            text = stringResource(R.string.weekly_subtitle, weeklyResolvedCount),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        if (weeklyValueSaved > 0) {
+                            Text(
+                                text = "${stringResource(R.string.weekly_value_saved)} $currencySymbol${String.format(Locale.getDefault(), "%.0f", weeklyValueSaved)}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Emerald
+                            )
+                        }
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            if (weeklyConsumedCount > 0) {
+                                Text(
+                                    text = "${stringResource(R.string.consumed)}: $weeklyConsumedCount",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            if (weeklyDonatedCount > 0) {
+                                Text(
+                                    text = "${stringResource(R.string.donated)}: $weeklyDonatedCount",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            if (topWastedCategory != null && weeklyWastedCount > 0) {
+                                Text(
+                                    text = "${stringResource(R.string.top_wasted)}: ${categoryDisplayName(topWastedCategory)}",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = Coral
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+
             Text(
                 text = stringResource(R.string.stats_title, monthName.replaceFirstChar { it.uppercase() }),
                 style = MaterialTheme.typography.headlineSmall,

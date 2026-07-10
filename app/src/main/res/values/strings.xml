@@ -167,6 +167,7 @@
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="theme_astral">Astral</string>
     <string name="section_data">Data and Backup</string>
     <string name="data_description">Export your data to keep or analyze it.</string>
     <string name="export_json">JSON Backup</string>
@@ -198,6 +199,39 @@
     <string name="yesterday">Yesterday</string>
 
     <!-- Widget -->
+    <!-- Quick Review -->
+    <string name="quick_review_trigger">Quick review</string>
+    <string name="quick_review_title">Quick review</string>
+    <string name="quick_review_progress">%1$d of %2$d</string>
+    <string name="quick_review_skip">Not now</string>
+    <string name="quick_review_done_title">All done!</string>
+    <string name="quick_review_done_body">You resolved %1$d of %2$d products.</string>
+    <string name="quick_review_value_saved">Value taken care of</string>
+    <string name="quick_review_skipped">%1$d products left for later</string>
+    <string name="quick_review_close">Close</string>
+
+    <!-- Frequent Products -->
+    <string name="frequent_products">Frequent products</string>
+
+    <!-- Low Stock -->
+    <string name="low_stock">Low stock</string>
+    <string name="minimum_stock_label">Alert me below</string>
+    <string name="minimum_stock_placeholder">Min. quantity</string>
+
+    <!-- Weekly Summary -->
+    <string name="weekly_title">This week</string>
+    <string name="weekly_subtitle">You took care of %1$d products!</string>
+    <string name="weekly_value_saved">Value saved:</string>
+    <string name="top_wasted">Most wasted</string>
+
+    <!-- Before Buying -->
+    <string name="before_buying_button">Review what you already have</string>
+    <string name="before_buying_title">You already have</string>
+    <string name="before_buying_subtitle">%1$d items are already in your pantry</string>
+    <string name="before_buying_none">No matches in your pantry</string>
+    <string name="before_buying_already_have">Already in pantry: %1$s</string>
+    <string name="before_buying_not_found">Not in inventory</string>
+
     <string name="widget_emoji">📋</string>
     <string name="widget_expired">Expired</string>
     <string name="widget_due_today">Due today ⚠️</string>
