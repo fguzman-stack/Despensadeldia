@@ -35,6 +35,7 @@ import androidx.core.content.ContextCompat
 import com.example.MainActivity
 import com.example.data.local.AppSettings
 import com.example.receiver.NotificationReceiver
+import com.example.ui.ads.ConsentManager
 import com.example.ui.viewmodel.PantryViewModel
 import com.example.utils.BackupHelper
 import kotlinx.coroutines.launch
@@ -328,6 +329,17 @@ fun SettingsScreen(
                         .clip(RoundedCornerShape(12.dp))
                         .clickable { showPrivacyDialog = true }
                 )
+
+                if (ConsentManager.canShowPrivacyOptions()) {
+                    ListItem(
+                        headlineContent = { Text(stringResource(R.string.ad_privacy_options)) },
+                        supportingContent = { Text(stringResource(R.string.ad_privacy_description)) },
+                        leadingContent = { Icon(Icons.Filled.Shield, contentDescription = null) },
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { ConsentManager.showPrivacyOptions(context as MainActivity) }
+                    )
+                }
             }
         }
     }

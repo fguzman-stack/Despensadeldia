@@ -30,6 +30,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.example.data.local.AppDatabase
 import com.example.data.repository.PantryRepository
+import com.example.ui.ads.AdManager
+import com.example.ui.ads.ConsentManager
 import com.example.ui.screens.DashboardScreen
 import com.example.ui.screens.OnboardingScreen
 import com.example.ui.screens.SetupScreen
@@ -52,6 +54,12 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val settings by viewModel.settingsState.collectAsState()
+
+            // UMP consent and AdMob initialization
+            LaunchedEffect(Unit) {
+                ConsentManager.requestConsent(this@MainActivity)
+                AdManager.initialize(this@MainActivity)
+            }
 
             // Request Notification Permission on Android 13+ (API 33)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

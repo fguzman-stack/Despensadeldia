@@ -7,4 +7,10 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Native Ad colors -->
+    <color name="native_ad_bg">#1A1B5E20</color>
+    <color name="native_ad_text_primary">#FF1B5E20</color>
+    <color name="native_ad_text_secondary">#FF4A5568</color>
+    <color name="native_ad_border">#336B8E23</color>
 </resources>

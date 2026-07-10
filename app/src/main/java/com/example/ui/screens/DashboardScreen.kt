@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -30,6 +31,10 @@ import com.example.data.local.ExpiryType
 import com.example.data.local.Product
 import com.example.data.local.ProductCategory
 import com.example.data.local.ProductLocation
+import com.example.ui.ads.AdManager
+import com.example.ui.ads.AdState
+import com.example.ui.ads.NATIVE_AD_UNIT_ID
+import com.example.ui.ads.NativeAdCard
 import com.example.ui.theme.Emerald
 import com.example.ui.theme.Amber
 import com.example.ui.theme.Coral
@@ -56,6 +61,11 @@ fun DashboardScreen(
     val activeProducts by viewModel.activeProductsState.collectAsState()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        AdManager.loadNativeAd(context, NATIVE_AD_UNIT_ID)
+    }
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf<String?>(null) }
@@ -231,7 +241,52 @@ fun DashboardScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(filteredProducts, key = { it.id }) { product ->
+                    val adInsertIndex = if (filteredProducts.size >= 8) 8 else filteredProducts.size
+                    val beforeAd = filteredProducts.take(adInsertIndex)
+                    val afterAd = filteredProducts.drop(adInsertIndex)
+
+                    items(beforeAd, key = { it.id }) { product ->
+                        SwipeableProductItem(
+                            product = product,
+                            currencySymbol = currencySymbol,
+                            onConsume = {
+                                viewModel.markAsConsumed(product)
+                                scope.launch {
+                                    val result = snackbarHostState.showSnackbar(
+                                        message = "${product.name} consumido",
+                                        actionLabel = "Deshacer",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        viewModel.undoProductResolution(product)
+                                    }
+                                }
+                            },
+                            onWaste = {
+                                viewModel.markAsWasted(product)
+                                scope.launch {
+                                    val result = snackbarHostState.showSnackbar(
+                                        message = "${product.name} descartado",
+                                        actionLabel = "Deshacer",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        viewModel.undoProductResolution(product)
+                                    }
+                                }
+                            },
+                            onEdit = { productToEdit = product }
+                        )
+                    }
+
+                    if (filteredProducts.isNotEmpty()) {
+                        item(key = "native_ad") {
+                            val adState by AdManager.adState.collectAsState()
+                            NativeAdCard(adState = adState)
+                        }
+                    }
+
+                    items(afterAd, key = { it.id }) { product ->
                         SwipeableProductItem(
                             product = product,
                             currencySymbol = currencySymbol,
@@ -266,7 +321,6 @@ fun DashboardScreen(
                     }
                 }
             }
-            AdBanner()
         }
     }
 
@@ -832,35 +886,4 @@ fun AddEditProductDialog(
     }
 }
 
-@Composable
-fun AdBanner() {
-    val tips = remember {
-        listOf(
-            "Tip: Los tomates duran más fuera del refrigerador si aún no están muy maduros.",
-            "Tip: Envuelve las hierbas frescas en una toalla de papel húmeda para conservarlas más tiempo.",
-            "Tip: No guardes las papas cerca de las cebollas, se echarán a perder más rápido.",
-            "Tip: Congela las frutas demasiado maduras para hacer batidos después.",
-            "Tip: Coloca las verduras en el cajón inferior para mantener la humedad adecuada.",
-            "Tip: Etiqueta tus envases con la fecha de preparación para un mejor control."
-        )
-    }
-    val tip = remember { tips.random() }
 
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
-        ),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Default.Lightbulb, contentDescription = null, tint = Color(0xFFF59E0B))
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = tip,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.weight(1f)
-            )
-        }
-    }
-}

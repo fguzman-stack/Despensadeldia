@@ -176,6 +176,8 @@
     <string name="privacy_description">All your information is stored only on this device. We do not use cloud servers.</string>
     <string name="privacy_detail">Despensa al Día was built with privacy in mind.\n\n• Your data (inventory, settings, lists) is stored locally on your device using an internal database (Room).\n• We do not require accounts, emails or passwords.\n• We do not share or send your consumption habits to any external server.\n• If you uninstall the app, your data will be lost unless you use the JSON backup feature.\n\nYour pantry, your rules, your privacy.</string>
     <string name="understood">Got it</string>
+    <string name="ad_privacy_options">Ad privacy options</string>
+    <string name="ad_privacy_description">Configure how personalized ads are shown</string>
 
     <!-- Setup -->
     <string name="setup_title">Preferences</string>

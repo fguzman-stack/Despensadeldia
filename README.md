@@ -21,7 +21,7 @@ Tu inventario, listas, estadísticas y registros se guardan localmente en tu dis
 - **Exportación de Datos** — Exporta todo tu inventario a **JSON** o **CSV** y compártelo con cualquier aplicación.
 - **Tema Claro / Oscuro** — Selecciona entre tema Sistema, Claro u Oscuro desde Ajustes. El tema oscuro usa una paleta verde bosque profundo con acentos sutiles; el claro usa tonos marfil cálidos.
 - **Idiomas y formatos regionales** — Se adapta al idioma, formato de fecha, moneda y unidades del dispositivo. Compatible con español, inglés y portugués de Brasil.
-- **Privado por diseño** — Tu inventario, listas, estadísticas y registros se guardan localmente en tu dispositivo. No necesitas crear una cuenta ni usamos servidores propios para almacenar tus productos.
+- **Datos locales y privacidad** — Tu inventario, listas, estadísticas y registros se guardan en tu dispositivo. No necesitas crear una cuenta ni usamos servidores propios para almacenar tus productos. La aplicación puede mostrar anuncios mediante servicios de Google, los cuales requieren conexión a internet y pueden procesar datos técnicos conforme a su política de privacidad.
 
 ## Identidad Visual — Jardín de Frescura
 
@@ -353,6 +353,12 @@ app/src/main/java/com/example/
 - **Localización:** Android resource qualifiers (values, values-es, values-pt-rBR)
 - **Componentes:** Notificaciones (AlarmManager), Widget (AppWidgetProvider), Exportación (FileProvider)
 - **Tipografía:** FontFamily.Default con jerarquía optimizada (ExtraBold a Medium) y espaciado refinado
+
+## Publicidad y privacidad
+
+Despensa al Día almacena tu inventario, listas, estadísticas y registros localmente en tu dispositivo. No necesitas crear una cuenta y no usamos servidores propios para almacenar tus productos.
+
+La aplicación puede mostrar anuncios mediante Google AdMob cuando existe conexión a internet. Estos anuncios pueden requerir servicios de Google y procesar datos técnicos conforme a las políticas de privacidad aplicables. Cuando corresponda, puedes revisar o cambiar tus opciones de privacidad publicitaria desde Ajustes.
 
 ## Licencia
 

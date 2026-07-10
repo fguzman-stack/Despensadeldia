@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -26,6 +27,10 @@ import androidx.compose.ui.res.stringResource
 import com.example.R
 import com.example.data.local.Product
 import com.example.data.local.ProductStatus
+import com.example.ui.ads.AdManager
+import com.example.ui.ads.AdState
+import com.example.ui.ads.NATIVE_AD_UNIT_ID
+import com.example.ui.ads.NativeAdCard
 import com.example.ui.theme.Emerald
 import com.example.ui.theme.Coral
 import com.example.ui.theme.Amber
@@ -46,6 +51,11 @@ fun StatsScreen(
     val donatedProducts by viewModel.donatedProductsState.collectAsState()
 
     val currencySymbol = settings.currencySymbol.ifEmpty { "$" }
+
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        AdManager.loadNativeAd(context, NATIVE_AD_UNIT_ID)
+    }
 
     // Monthly stats
     val calendar = Calendar.getInstance()
@@ -337,6 +347,10 @@ fun StatsScreen(
                     }
                 }
             }
+
+            // Native ad at end of stats
+            val adState by AdManager.adState.collectAsState()
+            NativeAdCard(adState = adState)
         }
     }
 }
