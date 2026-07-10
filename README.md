@@ -5,7 +5,9 @@
   <br>
 </div>
 
-Despensa al Día es una aplicación móvil **offline y privada** que te ayuda a cuidar mejor lo que compraste. No es solo un inventario: es una guía diaria que te muestra qué usar primero, registra tus hábitos de consumo y desperdicio, y te ayuda a aprovechar mejor tus productos del hogar. Tus datos se guardan localmente en tu dispositivo. Sin cuentas, sin servidores.
+Despensa al Día es una aplicación móvil que te ayuda a cuidar mejor lo que compraste. No es solo un inventario: es una guía diaria que te muestra qué usar primero, registra tus hábitos de consumo y desperdicio, y te ayuda a aprovechar mejor tus productos del hogar.
+
+Tu inventario, listas, estadísticas y registros se guardan localmente en tu dispositivo. No necesitas crear una cuenta ni usamos servidores propios para almacenar tus productos.
 
 ## Funcionalidades
 
@@ -19,7 +21,7 @@ Despensa al Día es una aplicación móvil **offline y privada** que te ayuda a 
 - **Exportación de Datos** — Exporta todo tu inventario a **JSON** o **CSV** y compártelo con cualquier aplicación.
 - **Tema Claro / Oscuro** — Selecciona entre tema Sistema, Claro u Oscuro desde Ajustes. El tema oscuro usa una paleta verde bosque profundo con acentos sutiles; el claro usa tonos marfil cálidos.
 - **Idiomas y formatos regionales** — Se adapta al idioma, formato de fecha, moneda y unidades del dispositivo. Compatible con español, inglés y portugués de Brasil.
-- **100% Privado** — Tus productos y registros se guardan localmente en tu dispositivo. Sin cuentas, sin servidores.
+- **Privado por diseño** — Tu inventario, listas, estadísticas y registros se guardan localmente en tu dispositivo. No necesitas crear una cuenta ni usamos servidores propios para almacenar tus productos.
 
 ## Identidad Visual — Jardín de Frescura
 
