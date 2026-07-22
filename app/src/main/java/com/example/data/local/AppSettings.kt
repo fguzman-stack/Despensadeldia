@@ -15,5 +15,6 @@ data class AppSettings(
     val notificationMinute: Int = 0,
     val notificationEnabled: Boolean = true,
     val streakDays: Int = 0,
-    val lastCheckTimestamp: Long = 0L // To compute streak daily updates
+    val lastCheckTimestamp: Long = 0L, // To compute streak daily updates
+    val geminiApiKey: String = ""
 )

@@ -34,7 +34,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.example.MainActivity
 import com.example.data.local.AppSettings
+import com.example.data.remote.FrankfurterService
 import com.example.receiver.NotificationReceiver
+import java.util.Locale
 import com.example.ui.viewmodel.PantryViewModel
 import com.example.utils.BackupHelper
 import kotlinx.coroutines.launch
@@ -53,6 +55,9 @@ fun SettingsScreen(
     var notificationEnabled by remember { mutableStateOf(true) }
     var notificationHour by remember { mutableStateOf(9) }
     var notificationMinute by remember { mutableStateOf(0) }
+    var geminiApiKey by remember { mutableStateOf("") }
+    var exchangeRates by remember { mutableStateOf<Map<String, Double>?>(null) }
+    var convertingCurrency by remember { mutableStateOf(false) }
 
     // Initialize state from DB values
     LaunchedEffect(settings) {
@@ -62,6 +67,7 @@ fun SettingsScreen(
             notificationEnabled = it.notificationEnabled
             notificationHour = it.notificationHour
             notificationMinute = it.notificationMinute
+            geminiApiKey = it.geminiApiKey
         }
     }
 
@@ -259,7 +265,92 @@ fun SettingsScreen(
                 }
             }
 
-            // 5. Privacy & Info Section
+            // 5. Currency Converter Section
+            SettingsSection(title = "Moneda") {
+                Text(
+                    text = "Tasas de cambio actuales (fuente: BCE)",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = {
+                            scope.launch {
+                                convertingCurrency = true
+                                val rates = FrankfurterService.getAllRates("USD")
+                                exchangeRates = rates
+                                convertingCurrency = false
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        enabled = !convertingCurrency
+                    ) {
+                        Icon(Icons.Filled.SwapHoriz, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(if (convertingCurrency) "Cargando..." else "Ver tasas USD")
+                    }
+                }
+                if (exchangeRates != null) {
+                    val rates = exchangeRates!!
+                    val majors = listOf("EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "BRL", "ARS", "MXN")
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        majors.filter { it in rates }.forEach { code ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(code, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                                Text(
+                                    "${rates[code]?.let { String.format("%.4f", it) } ?: "-"}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Actualizado: ${java.text.SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(java.util.Date())}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                }
+            }
+
+            // 6. AI Assistant Section
+            SettingsSection(title = "Asistente IA") {
+                Text(
+                    text = "Configura tu API key de Gemini (gratis en aistudio.google.com) para usar el asistente de despensa inteligente.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                OutlinedTextField(
+                    value = geminiApiKey,
+                    onValueChange = { geminiApiKey = it },
+                    label = { Text("Gemini API Key") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    placeholder = { Text("AIza...") }
+                )
+                Button(
+                    onClick = {
+                        saveChangesWithGemini(
+                            viewModel, settings, currencySymbol, selectedTheme,
+                            notificationEnabled, notificationHour, notificationMinute,
+                            geminiApiKey, context
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = geminiApiKey.isNotBlank()
+                ) {
+                    Text("Guardar API Key")
+                }
+            }
+
+            // 7. Privacy & Info Section
             SettingsSection(title = stringResource(R.string.section_about)) {
                 ListItem(
                     headlineContent = { Text(stringResource(R.string.privacy_title)) },
@@ -437,6 +528,35 @@ private fun saveChanges(
     )
 
     // Schedule or Cancel Local Notification
+    if (enabled) {
+        NotificationReceiver.scheduleNotification(context, hour, minute)
+    } else {
+        NotificationReceiver.cancelNotification(context)
+    }
+}
+
+private fun saveChangesWithGemini(
+    viewModel: PantryViewModel,
+    existing: AppSettings?,
+    currencySymbol: String,
+    theme: String,
+    enabled: Boolean,
+    hour: Int,
+    minute: Int,
+    geminiKey: String,
+    context: Context
+) {
+    val current = existing ?: AppSettings()
+    viewModel.saveFullSettings(
+        current.copy(
+            currencySymbol = currencySymbol,
+            theme = theme,
+            notificationEnabled = enabled,
+            notificationHour = hour,
+            notificationMinute = minute,
+            geminiApiKey = geminiKey
+        )
+    )
     if (enabled) {
         NotificationReceiver.scheduleNotification(context, hour, minute)
     } else {

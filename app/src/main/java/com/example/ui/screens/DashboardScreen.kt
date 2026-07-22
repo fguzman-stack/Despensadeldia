@@ -33,6 +33,8 @@ import com.example.data.local.ProductFrequent
 import com.example.data.local.ProductLocation
 import com.example.data.recipe.RecipeCatalog
 import com.example.data.remote.BarcodeLookupResult
+import com.example.data.remote.MealDBRecipe
+import com.example.data.remote.NutritionInfo
 import com.example.data.repository.PantryRepository
 import com.example.receiver.NotificationReceiver
 import com.example.ui.theme.Amber
@@ -88,6 +90,9 @@ fun DashboardScreen(
 
     var showShoppingList by remember { mutableStateOf(false) }
     var showMealPlanner by remember { mutableStateOf(false) }
+    var showAIAssistant by remember { mutableStateOf(false) }
+    var showNutritionDialog by remember { mutableStateOf<Product?>(null) }
+    var showOnlineRecipes by remember { mutableStateOf(false) }
 
     val currencySymbol = settings.currencySymbol.ifEmpty { "$" }
 
@@ -136,6 +141,16 @@ fun DashboardScreen(
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     IconButton(
+                        onClick = { showOnlineRecipes = true },
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface, CircleShape)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.MenuBook,
+                            contentDescription = "Recetas online",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    IconButton(
                         onClick = { showMealPlanner = true },
                         modifier = Modifier.background(MaterialTheme.colorScheme.surface, CircleShape)
                     ) {
@@ -154,6 +169,18 @@ fun DashboardScreen(
                             contentDescription = stringResource(R.string.shopping_list),
                             tint = MaterialTheme.colorScheme.primary
                         )
+                    }
+                    if (settings.geminiApiKey.isNotBlank()) {
+                        IconButton(
+                            onClick = { showAIAssistant = true },
+                            modifier = Modifier.background(MaterialTheme.colorScheme.surface, CircleShape)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.AutoAwesome,
+                                contentDescription = "Asistente IA",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 }
             }
@@ -254,6 +281,7 @@ fun DashboardScreen(
                     val beforeAd = filteredProducts.take(adInsertIndex)
                     val afterAd = filteredProducts.drop(adInsertIndex)
 
+                    val items = filteredProducts
                     items(beforeAd, key = { it.id }) { product ->
                         SwipeableProductItem(
                             product = product,
@@ -293,6 +321,10 @@ fun DashboardScreen(
                                         duration = SnackbarDuration.Short
                                     )
                                 }
+                            },
+                            onShowNutrition = { barcode ->
+                                viewModel.lookupNutrition(barcode)
+                                showNutritionDialog = product
                             }
                         )
                     }
@@ -336,6 +368,10 @@ fun DashboardScreen(
                                         duration = SnackbarDuration.Short
                                     )
                                 }
+                            },
+                            onShowNutrition = { barcode ->
+                                viewModel.lookupNutrition(barcode)
+                                showNutritionDialog = product
                             }
                         )
                     }
@@ -385,6 +421,31 @@ fun DashboardScreen(
             onDismiss = { showMealPlanner = false }
         )
     }
+
+    if (showAIAssistant && settings.geminiApiKey.isNotBlank()) {
+        AIAssistantSheet(
+            viewModel = viewModel,
+            products = activeProducts,
+            apiKey = settings.geminiApiKey,
+            onDismiss = { showAIAssistant = false }
+        )
+    }
+
+    if (showNutritionDialog != null) {
+        NutritionDialog(
+            viewModel = viewModel,
+            product = showNutritionDialog!!,
+            onDismiss = { showNutritionDialog = null }
+        )
+    }
+
+    if (showOnlineRecipes) {
+        OnlineRecipeSheet(
+            viewModel = viewModel,
+            products = activeProducts,
+            onDismiss = { showOnlineRecipes = false }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -395,7 +456,8 @@ fun SwipeableProductItem(
     onConsume: () -> Unit,
     onWaste: () -> Unit,
     onEdit: () -> Unit,
-    onAddToShoppingList: (() -> Unit)? = null
+    onAddToShoppingList: (() -> Unit)? = null,
+    onShowNutrition: ((String) -> Unit)? = null
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = {
@@ -454,7 +516,7 @@ fun SwipeableProductItem(
             }
         },
         content = {
-            ProductCard(product, currencySymbol, onEdit, onAddToShoppingList)
+            ProductCard(product, currencySymbol, onEdit, onAddToShoppingList, onShowNutrition)
         }
     )
 }
@@ -464,7 +526,8 @@ fun ProductCard(
     product: Product,
     currencySymbol: String,
     onEdit: () -> Unit,
-    onAddToShoppingList: (() -> Unit)? = null
+    onAddToShoppingList: (() -> Unit)? = null,
+    onShowNutrition: ((String) -> Unit)? = null
 ) {
     val now = System.currentTimeMillis()
     val daysRemaining = product.expirationDate?.let {
@@ -573,6 +636,19 @@ fun ProductCard(
             }
 
             Column(horizontalAlignment = Alignment.End) {
+                if (!product.barcode.isNullOrBlank()) {
+                    IconButton(
+                        onClick = { onShowNutrition?.invoke(product.barcode) },
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.Spa,
+                            contentDescription = "Nutrición",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
                 if (product.totalPrice > 0) {
                     Text(
                         text = "$currencySymbol${String.format(Locale.getDefault(), "%.0f", product.totalPrice)}",
@@ -1165,6 +1241,219 @@ fun AddEditProductDialog(
                 if (result.quantity != null && result.quantity > 0) quantityStr = result.quantity.toString()
                 if (result.unit != null) unit = result.unit
             }
+        }
+    }
+}
+
+@Composable
+fun NutritionDialog(
+    viewModel: PantryViewModel,
+    product: Product,
+    onDismiss: () -> Unit
+) {
+    var nutritionInfo by remember { mutableStateOf<NutritionInfo?>(null) }
+    var loading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(product.barcode) {
+        loading = true
+        viewModel.lookupNutrition(product.barcode ?: "")
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.nutritionResult.collect { info ->
+            nutritionInfo = info
+            loading = false
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Info nutricional: ${product.name}", fontWeight = FontWeight.Bold) },
+        text = {
+            if (loading) {
+                Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else if (nutritionInfo != null) {
+                val n = nutritionInfo!!
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Por ${n.servingSize ?: "100g"}:", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                    listOf(
+                        "Calorías" to n.calories,
+                        "Proteínas" to n.protein,
+                        "Grasas" to n.fat,
+                        "Carbohidratos" to n.carbs,
+                        "Fibra" to n.fiber,
+                        "Azúcares" to n.sugar,
+                        "Sal" to n.salt
+                    ).filter { it.second != null }.forEach { (label, value) ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text(label, style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                String.format("%.1f g", value),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Text("Fuente: Open Food Facts", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+                }
+            } else {
+                Text("No hay información nutricional disponible para este producto.")
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Cerrar") } }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AIAssistantSheet(
+    viewModel: PantryViewModel,
+    products: List<Product>,
+    apiKey: String,
+    onDismiss: () -> Unit
+) {
+    var question by remember { mutableStateOf("") }
+    var response by remember { mutableStateOf<String?>(null) }
+    val isLoading by viewModel.geminiLoading.collectAsState()
+
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text("Asistente de Despensa IA", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text("Pregunta qué cocinar, qué comprar, o consejos con lo que tienes.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+            val productList = products.joinToString(", ") { it.name }
+
+            OutlinedTextField(
+                value = question,
+                onValueChange = { question = it },
+                label = { Text("Tu pregunta") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 2,
+                maxLines = 4
+            )
+
+            Button(
+                onClick = {
+                    viewModel.askGemini(apiKey, productList, question)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = question.isNotBlank() && !isLoading
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                    Spacer(Modifier.width(8.dp))
+                }
+                Text(if (isLoading) "Pensando..." else "Preguntar")
+            }
+
+            LaunchedEffect(Unit) {
+                viewModel.geminiResponse.collect { reply ->
+                    response = reply
+                }
+            }
+
+            if (response != null) {
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                ) {
+                    Text(
+                        text = response!!,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun OnlineRecipeSheet(
+    viewModel: PantryViewModel,
+    products: List<Product>,
+    onDismiss: () -> Unit
+) {
+    val onlineRecipes by viewModel.onlineRecipes.collectAsState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    LaunchedEffect(products) {
+        val ingredients = products.map { it.name }.filter { it.length > 2 }.distinct()
+        viewModel.searchOnlineRecipes(ingredients)
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            contentPadding = PaddingValues(bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            item {
+                Text("Recetas Online", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text("Desde TheMealDB • Basadas en tu despensa", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+            }
+
+            if (onlineRecipes.isEmpty()) {
+                item {
+                    Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))) {
+                        Column(Modifier.padding(24.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Filled.MenuBook, contentDescription = null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(48.dp))
+                            Spacer(Modifier.height(8.dp))
+                            Text("Buscando recetas...", style = MaterialTheme.typography.titleMedium)
+                            Text("Asegúrate de tener productos en tu despensa", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            } else {
+                items(onlineRecipes) { recipe ->
+                    OnlineRecipeCard(recipe)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun OnlineRecipeCard(recipe: MealDBRecipe) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(Modifier.weight(1f)) {
+                    Text(recipe.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text("${recipe.ingredients.size} ingredientes", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+                }
+            }
+            Text(
+                text = recipe.instructions?.take(200)?.let { if (it.length < (recipe.instructions?.length ?: 0)) "$it..." else it } ?: "",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 8.dp)
+            )
         }
     }
 }

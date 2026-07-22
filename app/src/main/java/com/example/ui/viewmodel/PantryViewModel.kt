@@ -13,6 +13,13 @@ import com.example.data.local.ProductStatus
 import com.example.data.recipe.RecipeCatalog
 import com.example.data.remote.BarcodeLookupResult
 import com.example.data.remote.BarcodeLookupService
+import com.example.data.remote.FrankfurterService
+import com.example.data.remote.GeminiConfig
+import com.example.data.remote.GeminiService
+import com.example.data.remote.MealDBRecipe
+import com.example.data.remote.NutritionInfo
+import com.example.data.remote.OpenFoodFactsService
+import com.example.data.remote.TheMealDBService
 import com.example.data.repository.PantryRepository
 import com.example.utils.isCurrentlySnoozed
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -197,6 +204,64 @@ class PantryViewModel(
             }
             val result = BarcodeLookupService.lookup(barcode)
             _barcodeLookupResult.emit(result)
+        }
+    }
+
+    // ─── Frankfurter Currency ──────────────────────────────────────
+
+    private val _conversionResult = MutableSharedFlow<Double?>(replay = 1)
+    val conversionResult: SharedFlow<Double?> = _conversionResult
+
+    fun convertCurrency(amount: Double, from: String, to: String) {
+        viewModelScope.launch {
+            val rate = FrankfurterService.convert(amount, from, to)
+            _conversionResult.emit(rate?.let { kotlin.math.round(it * 100.0) / 100.0 })
+        }
+    }
+
+    // ─── Nutrition Info ────────────────────────────────────────────
+
+    private val _nutritionResult = MutableSharedFlow<NutritionInfo?>(replay = 1)
+    val nutritionResult: SharedFlow<NutritionInfo?> = _nutritionResult
+
+    fun lookupNutrition(barcode: String) {
+        viewModelScope.launch {
+            val info = OpenFoodFactsService.getNutrition(barcode)
+            _nutritionResult.emit(info)
+        }
+    }
+
+    // ─── TheMealDB Recipes ─────────────────────────────────────────
+
+    private val _onlineRecipes = MutableStateFlow<List<MealDBRecipe>>(emptyList())
+    val onlineRecipes: StateFlow<List<MealDBRecipe>> = _onlineRecipes
+
+    fun searchOnlineRecipes(ingredients: List<String>) {
+        viewModelScope.launch {
+            _onlineRecipes.value = TheMealDBService.searchByIngredients(ingredients)
+        }
+    }
+
+    // ─── Gemini AI Assistant ───────────────────────────────────────
+
+    private val _geminiResponse = MutableSharedFlow<String?>(replay = 1)
+    val geminiResponse: SharedFlow<String?> = _geminiResponse
+
+    private val _geminiLoading = MutableStateFlow(false)
+    val geminiLoading: StateFlow<Boolean> = _geminiLoading
+
+    fun askGemini(apiKey: String, productList: String, question: String) {
+        viewModelScope.launch {
+            _geminiLoading.value = true
+            val context = """
+Eres un asistente de despensa inteligente. 
+Productos en la despensa: $productList
+Instrucciones: Responde en español, sé conciso, sugiere recetas y consejos.
+            """.trimIndent()
+            val config = GeminiConfig(apiKey = apiKey)
+            val reply = GeminiService.sendMessage(config, context, question)
+            _geminiResponse.emit(reply)
+            _geminiLoading.value = false
         }
     }
 
