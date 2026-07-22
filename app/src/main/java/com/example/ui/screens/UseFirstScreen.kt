@@ -185,7 +185,6 @@ fun UseFirstScreen(
                             Spacer(modifier = Modifier.height(8.dp))
                         }
                     }
-
                     if (expired.isNotEmpty()) {
                         item {
                             SectionHeader(
@@ -333,7 +332,6 @@ fun UseFirstScreen(
             onDismiss = { showQuickReview = false }
         )
     }
-
     if (productToSnooze != null) {
         val product = productToSnooze!!
         val snoozeTemplate = stringResource(R.string.snackbar_snoozed)
