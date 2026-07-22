@@ -1,6 +1,6 @@
 <div align="center">
   <br>
-  <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" width="120" height="120" alt="Despensa al Día">
+  <img src="https://raw.githubusercontent.com/fguzman-stack/Despensadeldia/feature/mvp-restructure/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" width="120" height="120" alt="Despensa al Día">
   <br>
   <h1>🌿 Despensa al Día</h1>
   <p><strong>Ve lo que importa hoy. Aprovecha lo que ya tienes.</strong></p>
