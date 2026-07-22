@@ -31,10 +31,13 @@ import com.example.data.local.Product
 import com.example.data.local.ProductCategory
 import com.example.data.local.ProductFrequent
 import com.example.data.local.ProductLocation
-
-import com.example.ui.theme.Emerald
+import com.example.data.recipe.RecipeCatalog
+import com.example.data.remote.BarcodeLookupResult
+import com.example.data.repository.PantryRepository
+import com.example.receiver.NotificationReceiver
 import com.example.ui.theme.Amber
 import com.example.ui.theme.Coral
+import com.example.ui.theme.Emerald
 import com.example.ui.viewmodel.PantryViewModel
 import com.example.utils.ExpiryPredictor
 import kotlinx.coroutines.launch
@@ -1148,9 +1151,21 @@ fun AddEditProductDialog(
             onBarcodeDetected = { barcode ->
                 scannedBarcode = barcode
                 showBarcodeScanner = false
+                viewModel.lookupByBarcode(barcode)
             },
             onDismiss = { showBarcodeScanner = false }
         )
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.barcodeLookupResult.collect { result ->
+            if (result != null) {
+                if (result.name != null) name = result.name
+                if (result.brand != null) brand = result.brand
+                if (result.quantity != null && result.quantity > 0) quantityStr = result.quantity.toString()
+                if (result.unit != null) unit = result.unit
+            }
+        }
     }
 }
 

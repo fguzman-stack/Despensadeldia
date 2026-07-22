@@ -11,9 +11,13 @@ import com.example.data.local.ProductFrequent
 import com.example.data.local.ProductLocation
 import com.example.data.local.ProductStatus
 import com.example.data.recipe.RecipeCatalog
+import com.example.data.remote.BarcodeLookupResult
+import com.example.data.remote.BarcodeLookupService
 import com.example.data.repository.PantryRepository
 import com.example.utils.isCurrentlySnoozed
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -169,6 +173,30 @@ class PantryViewModel(
                     lastCheckTimestamp = today
                 ))
             }
+        }
+    }
+
+    // ─── Barcode Lookup ────────────────────────────────────────────
+
+    private val _barcodeLookupResult = MutableSharedFlow<BarcodeLookupResult?>(replay = 1)
+    val barcodeLookupResult: SharedFlow<BarcodeLookupResult?> = _barcodeLookupResult
+
+    fun lookupByBarcode(barcode: String) {
+        viewModelScope.launch {
+            val local = repository.getProductByBarcode(barcode)
+            if (local != null) {
+                _barcodeLookupResult.emit(
+                    BarcodeLookupResult(
+                        name = local.name,
+                        brand = local.brand,
+                        quantity = local.quantity,
+                        unit = local.unit
+                    )
+                )
+                return@launch
+            }
+            val result = BarcodeLookupService.lookup(barcode)
+            _barcodeLookupResult.emit(result)
         }
     }
 
