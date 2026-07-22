@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.example.R
+import com.example.data.Achievement
 import com.example.data.local.Product
 import com.example.data.local.ProductStatus
 import com.example.ui.ads.AdManager
@@ -49,6 +50,7 @@ fun StatsScreen(
     val consumedProducts by viewModel.consumedProductsState.collectAsState()
     val wastedProducts by viewModel.wastedProductsState.collectAsState()
     val donatedProducts by viewModel.donatedProductsState.collectAsState()
+    val earnedAchievements by viewModel.earnedAchievements.collectAsState()
 
     val currencySymbol = settings.currencySymbol.ifEmpty { "$" }
 
@@ -237,6 +239,85 @@ fun StatsScreen(
                                     color = Coral
                                 )
                             }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+
+            // ─── Achievements / Badges ─────────────────────────
+            if (earnedAchievements.isNotEmpty()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Amber.copy(alpha = 0.08f)
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Filled.WorkspacePremium,
+                                contentDescription = null,
+                                tint = Amber,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Logros",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = Amber
+                            )
+                        }
+
+                        val earnedList = Achievement.entries.filter { it.id in earnedAchievements }
+                        val displayBadges = if (earnedList.size > 6) earnedList.take(6) else earnedList
+                        val extraCount = earnedList.size - displayBadges.size
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            displayBadges.chunked(3).forEach { row ->
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    row.forEach { badge ->
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                        ) {
+                                            Icon(
+                                                badge.icon,
+                                                contentDescription = null,
+                                                tint = badge.color,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                            Text(
+                                                text = badge.title,
+                                                style = MaterialTheme.typography.labelMedium,
+                                                fontWeight = FontWeight.Medium,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (extraCount > 0) {
+                            Text(
+                                text = "+$extraCount más",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.outline
+                            )
                         }
                     }
                 }

@@ -53,15 +53,15 @@ val BorderDark = Color(0xFF314137)
 val BorderMedium = Color(0xFF4A5A4E)
 val BorderLight = Color(0xFFD6D3CD)
 
-// ─── Alacena Astral ──────────────────────────────────────────
-val AstralBackground = Color(0xFF080A18)
-val AstralSurface = Color(0xFF11152B)
-val AstralSurfaceVariant = Color(0xFF181D38)
-val AstralBorder = Color(0xFF313A67)
-val AstralTextPrimary = Color(0xFFF1F3FF)
-val AstralTextSecondary = Color(0xFFB7BDD9)
-val AstralAction = Color(0xFF72E0C1)
-val AstralAttention = Color(0xFFFFD27A)
-val AstralUrgency = Color(0xFFFF8A8A)
-val AstralDonation = Color(0xFFC6A6FF)
-val AstralAccent = Color(0xFF72A5FF)
+// ─── Tema Premium (Gourmet Boutique) ──────────────────────
+val PremiumBackground = Color(0xFF161019) // Very dark aubergine
+val PremiumSurface = Color(0xFF231A26)
+val PremiumSurfaceVariant = Color(0xFF332638)
+val PremiumBorder = Color(0xFF4A3A52)
+val PremiumTextPrimary = Color(0xFFF7EBEB)
+val PremiumTextSecondary = Color(0xFFC7B3CA)
+val PremiumAction = Color(0xFFD4AF37) // Metallic Gold
+val PremiumAttention = Color(0xFFE27D60) // Terracotta
+val PremiumUrgency = Color(0xFFC84B31) // Rich Red
+val PremiumDonation = Color(0xFF85B09A) // Sage
+val PremiumAccent = Color(0xFFF3E5AB) // Champagne

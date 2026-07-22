@@ -137,6 +137,11 @@ fun PantryAppContainer(viewModel: PantryViewModel) {
         PantryWidgetProvider.triggerUpdate(context)
     }
 
+    // Check daily streak
+    LaunchedEffect(Unit) {
+        viewModel.checkDailyStreak()
+    }
+
     Scaffold(
         bottomBar = {
             NavigationBar(

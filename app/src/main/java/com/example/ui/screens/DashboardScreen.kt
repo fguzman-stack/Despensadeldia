@@ -40,6 +40,7 @@ import com.example.ui.theme.Emerald
 import com.example.ui.theme.Amber
 import com.example.ui.theme.Coral
 import com.example.ui.viewmodel.PantryViewModel
+import com.example.utils.ExpiryPredictor
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -92,6 +93,7 @@ fun DashboardScreen(
     )
 
     var showShoppingList by remember { mutableStateOf(false) }
+    var showMealPlanner by remember { mutableStateOf(false) }
 
     val currencySymbol = settings.currencySymbol.ifEmpty { "$" }
 
@@ -138,15 +140,27 @@ fun DashboardScreen(
                         fontWeight = FontWeight.Medium
                     )
                 }
-                IconButton(
-                    onClick = { showShoppingList = true },
-                    modifier = Modifier.background(MaterialTheme.colorScheme.surface, CircleShape)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.ShoppingCart,
-                        contentDescription = stringResource(R.string.shopping_list),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    IconButton(
+                        onClick = { showMealPlanner = true },
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface, CircleShape)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.CalendarMonth,
+                            contentDescription = "Plan semanal",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    IconButton(
+                        onClick = { showShoppingList = true },
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface, CircleShape)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.ShoppingCart,
+                            contentDescription = stringResource(R.string.shopping_list),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
 
@@ -375,6 +389,13 @@ fun DashboardScreen(
         ShoppingListSheet(
             viewModel = viewModel,
             onDismiss = { showShoppingList = false }
+        )
+    }
+
+    if (showMealPlanner) {
+        MealPlannerSheet(
+            viewModel = viewModel,
+            onDismiss = { showMealPlanner = false }
         )
     }
 }
@@ -681,6 +702,9 @@ fun AddEditProductDialog(
     var selectedDateInMillis by remember { mutableStateOf(calendar.timeInMillis) }
     var showDatePicker by remember { mutableStateOf(false) }
 
+    var showBarcodeScanner by remember { mutableStateOf(false) }
+    var scannedBarcode by remember { mutableStateOf(product?.barcode ?: "") }
+
     var showFullMode by remember { mutableStateOf(product != null) }
 
     var categoryExpanded by remember { mutableStateOf(false) }
@@ -715,7 +739,7 @@ fun AddEditProductDialog(
                         quantityStr.toDoubleOrNull() ?: 1.0,
                         unit, location, expiryType,
                         if (expiryType == ExpiryType.NONE) null else selectedDateInMillis,
-                        null, notes.ifBlank { null }, brand.ifBlank { null },
+                        scannedBarcode.ifBlank { null }, notes.ifBlank { null }, brand.ifBlank { null },
                         minStockStr.toDoubleOrNull()
                     )
                 },
@@ -792,6 +816,21 @@ fun AddEditProductDialog(
                     singleLine = true
                 )
 
+                // Barcode scan button
+                OutlinedButton(
+                    onClick = { showBarcodeScanner = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Filled.QrCodeScanner, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        if (scannedBarcode.isNotEmpty()) "Código: $scannedBarcode"
+                        else "Escanear código de barras",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+
                 // Location chips
                 Text(stringResource(R.string.location), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -828,6 +867,39 @@ fun AddEditProductDialog(
                             label = { Text(label, style = MaterialTheme.typography.labelSmall) },
                             shape = RoundedCornerShape(10.dp)
                         )
+                    }
+                }
+
+                // Estimated expiry hint
+                if (expiryType == ExpiryType.ESTIMATED) {
+                    val estimatedDays = ExpiryPredictor.estimateExpiryDays(category, location)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = Amber.copy(alpha = 0.12f)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.Info,
+                                contentDescription = null,
+                                tint = Amber,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = ExpiryPredictor.getHint(category, location),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                    // Auto-set date based on estimate
+                    LaunchedEffect(expiryType, category, location) {
+                        val autoDate = System.currentTimeMillis() + (estimatedDays * 24L * 60 * 60 * 1000)
+                        selectedDateInMillis = autoDate
                     }
                 }
 
@@ -988,6 +1060,16 @@ fun AddEditProductDialog(
                 }) { Text(stringResource(R.string.ok)) }
             }
         ) { DatePicker(state = datePickerState) }
+    }
+
+    if (showBarcodeScanner) {
+        BarcodeScannerScreen(
+            onBarcodeDetected = { barcode ->
+                scannedBarcode = barcode
+                showBarcodeScanner = false
+            },
+            onDismiss = { showBarcodeScanner = false }
+        )
     }
 }
 

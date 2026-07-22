@@ -95,6 +95,9 @@ fun UseFirstScreen(
     var productToResolve by remember { mutableStateOf<Product?>(null) }
     var productToSnooze by remember { mutableStateOf<Product?>(null) }
     var showQuickReview by remember { mutableStateOf(false) }
+    var showRecipes by remember { mutableStateOf(false) }
+
+    val recipeSuggestions by viewModel.recipeSuggestions.collectAsState()
 
     val currencySymbol = settings.currencySymbol.ifEmpty { "$" }
 
@@ -110,6 +113,7 @@ fun UseFirstScreen(
         if (!hasUrgentItems) {
             AllClearView(
                 totalActive = activeProducts.size,
+                onRecipes = { showRecipes = true },
                 modifier = Modifier.padding(innerPadding)
             )
         } else {
@@ -134,26 +138,49 @@ fun UseFirstScreen(
 
                     if (hasUrgentItems) {
                         item {
-                            FilledTonalButton(
-                                onClick = { showQuickReview = true },
-                                modifier = Modifier.fillMaxWidth().height(52.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.filledTonalButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Icon(
-                                    Icons.Filled.PlayArrow,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    stringResource(R.string.quick_review_trigger),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.SemiBold
-                                )
+                                FilledTonalButton(
+                                    onClick = { showQuickReview = true },
+                                    modifier = Modifier.weight(1f).height(52.dp),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = ButtonDefaults.filledTonalButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                ) {
+                                    Icon(
+                                        Icons.Filled.PlayArrow,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        stringResource(R.string.quick_review_trigger),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+
+                                OutlinedButton(
+                                    onClick = { showRecipes = true },
+                                    modifier = Modifier.weight(1f).height(52.dp),
+                                    shape = RoundedCornerShape(16.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Filled.MenuBook,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        "Recetas",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                         }
@@ -322,6 +349,13 @@ fun UseFirstScreen(
                 }
             },
             onDismiss = { productToSnooze = null }
+        )
+    }
+
+    if (showRecipes) {
+        RecipeSuggestionsSheet(
+            suggestions = recipeSuggestions,
+            onDismiss = { showRecipes = false }
         )
     }
 }
@@ -665,7 +699,11 @@ fun ProductCard(
 }
 
 @Composable
-fun AllClearView(totalActive: Int, modifier: Modifier = Modifier) {
+fun AllClearView(
+    totalActive: Int,
+    onRecipes: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = modifier.fillMaxSize().padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -700,6 +738,19 @@ fun AllClearView(totalActive: Int, modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedButton(
+            onClick = onRecipes,
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Icon(
+                Icons.Filled.MenuBook,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Ver recetas con tu despensa")
+        }
     }
 }
 

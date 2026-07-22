@@ -37,6 +37,7 @@ datastorePreferences = "1.1.7"
 generativeAi = "0.9.0"
 playServicesAds = "23.6.0"
 userMessagingPlatform = "2.2.0"
+mlkitBarcodeScanning = "17.3.0"
 robolectric = "4.16.1"
 roborazzi = "1.59.0"
 firebaseBom = "34.15.0"
@@ -94,6 +95,7 @@ firebase-ai = { group = "com.google.firebase", name = "firebase-ai" }
 firebase-appcheck-recaptcha = { group = "com.google.firebase", name = "firebase-appcheck-recaptcha" }
 play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
 user-messaging-platform = { group = "com.google.android.ump", name = "user-messaging-platform", version.ref = "userMessagingPlatform" }
+mlkit-barcode-scanning = { group = "com.google.mlkit", name = "barcode-scanning", version.ref = "mlkitBarcodeScanning" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

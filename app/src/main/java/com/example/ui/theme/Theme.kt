@@ -69,35 +69,35 @@ private val DarkColorScheme = darkColorScheme(
   surfaceTint = EmeraldLight
 )
 
-private val AstralColorScheme = darkColorScheme(
-  primary = AstralAction,
-  onPrimary = Color(0xFF00382A),
-  primaryContainer = Color(0xFF005139),
-  onPrimaryContainer = Color(0xFFB2F2DA),
-  secondary = AstralAttention,
-  onSecondary = Color(0xFF3D2E00),
-  secondaryContainer = Color(0xFF5C4000),
-  onSecondaryContainer = Color(0xFFFFE1A0),
-  tertiary = AstralDonation,
-  onTertiary = Color(0xFF311A5E),
-  tertiaryContainer = Color(0xFF4A3077),
-  onTertiaryContainer = Color(0xFFE8D6FF),
-  error = AstralUrgency,
-  onError = Color(0xFF410002),
-  errorContainer = Color(0xFF6E1818),
+private val PremiumColorScheme = darkColorScheme(
+  primary = PremiumAction,
+  onPrimary = Color(0xFF382900),
+  primaryContainer = Color(0xFF533F00),
+  onPrimaryContainer = Color(0xFFFFE082),
+  secondary = PremiumAttention,
+  onSecondary = Color(0xFF3A1207),
+  secondaryContainer = Color(0xFF561D0C),
+  onSecondaryContainer = Color(0xFFFFDBCC),
+  tertiary = PremiumDonation,
+  onTertiary = Color(0xFF13291F),
+  tertiaryContainer = Color(0xFF214234),
+  onTertiaryContainer = Color(0xFFBFEADB),
+  error = PremiumUrgency,
+  onError = Color(0xFF450903),
+  errorContainer = Color(0xFF731305),
   onErrorContainer = Color(0xFFFFDAD6),
-  background = AstralBackground,
-  onBackground = AstralTextPrimary,
-  surface = AstralSurface,
-  onSurface = AstralTextPrimary,
-  surfaceVariant = AstralSurfaceVariant,
-  onSurfaceVariant = AstralTextSecondary,
-  outline = AstralBorder,
-  outlineVariant = Color(0xFF414B7A),
-  inverseSurface = Color(0xFFF1F3FF),
-  inverseOnSurface = Color(0xFF080A18),
-  inversePrimary = Color(0xFF005139),
-  surfaceTint = AstralAccent
+  background = PremiumBackground,
+  onBackground = PremiumTextPrimary,
+  surface = PremiumSurface,
+  onSurface = PremiumTextPrimary,
+  surfaceVariant = PremiumSurfaceVariant,
+  onSurfaceVariant = PremiumTextSecondary,
+  outline = PremiumBorder,
+  outlineVariant = Color(0xFF63516E),
+  inverseSurface = Color(0xFFF7EBEB),
+  inverseOnSurface = Color(0xFF161019),
+  inversePrimary = Color(0xFF5C4700),
+  surfaceTint = PremiumAccent
 )
 
 @Composable
@@ -107,7 +107,7 @@ fun MyApplicationTheme(
   content: @Composable () -> Unit,
 ) {
   val colorScheme = when (userTheme) {
-    "ASTRAL" -> AstralColorScheme
+    "ASTRAL" -> PremiumColorScheme
     else -> if (darkTheme) DarkColorScheme else LightColorScheme
   }
   MaterialTheme(colorScheme = colorScheme, typography = Typography, content = content)

@@ -2,6 +2,7 @@ package com.example.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.data.Achievement
 import com.example.data.local.AppSettings
 import com.example.data.local.ExpiryType
 import com.example.data.local.Product
@@ -9,13 +10,16 @@ import com.example.data.local.ProductCategory
 import com.example.data.local.ProductFrequent
 import com.example.data.local.ProductLocation
 import com.example.data.local.ProductStatus
+import com.example.data.recipe.RecipeCatalog
 import com.example.data.repository.PantryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import java.util.Locale
 
 class PantryViewModel(
@@ -89,6 +93,72 @@ class PantryViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    // ─── Recipe Suggestions ────────────────────────────────────────
+
+    val recipeSuggestions: StateFlow<List<RecipeCatalog.RecipeMatch>> = activeProductsState
+        .map { activeProducts ->
+            val ingredientNames = activeProducts.map { it.name.lowercase().trim() }.toSet()
+            RecipeCatalog.findRecipesByIngredients(ingredientNames, minMatch = 1)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    // ─── Achievements ──────────────────────────────────────────────
+
+    val earnedAchievements: StateFlow<Set<String>> = combine(
+        activeProductsState, consumedProductsState, wastedProductsState,
+        donatedProductsState, settingsState
+    ) { active, consumed, wasted, donated, settings ->
+        val rescued = consumed.count { it.expirationDate != null && it.resolvedDate != null &&
+            it.resolvedDate < it.expirationDate }
+        val allProducts = active + consumed + wasted + donated
+        val now = System.currentTimeMillis()
+        val weekAgo = now - 7 * 24 * 60 * 60 * 1000
+        val weeklyWasted = wasted.count { it.resolvedDate != null && it.resolvedDate >= weekAgo }
+
+        Achievement.compute(
+            streakDays = settings.streakDays,
+            totalConsumed = consumed.size,
+            totalWasted = wasted.size,
+            totalDonated = donated.size,
+            rescuedCount = rescued,
+            totalEverAdded = allProducts.size,
+            weeklyWasted = weeklyWasted
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptySet()
+    )
+
+    fun checkDailyStreak() {
+        viewModelScope.launch {
+            val current = repository.getSettingsDirect() ?: AppSettings()
+            val today = Calendar.getInstance().let {
+                it.set(Calendar.HOUR_OF_DAY, 0)
+                it.set(Calendar.MINUTE, 0)
+                it.set(Calendar.SECOND, 0)
+                it.set(Calendar.MILLISECOND, 0)
+                it.timeInMillis
+            }
+            if (current.lastCheckTimestamp < today) {
+                val yesterday = today - 24 * 60 * 60 * 1000
+                val newStreak = if (current.lastCheckTimestamp >= yesterday) {
+                    current.streakDays + 1
+                } else {
+                    1
+                }
+                repository.saveSettings(current.copy(
+                    streakDays = newStreak,
+                    lastCheckTimestamp = today
+                ))
+            }
+        }
+    }
 
     // ─── Settings ──────────────────────────────────────────────────
 

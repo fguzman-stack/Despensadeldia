@@ -156,7 +156,7 @@
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Escuro</string>
-    <string name="theme_astral">Astral</string>
+    <string name="theme_astral">Premium</string>
     <string name="section_data">Dados e Backup</string>
     <string name="data_description">Exporte seus dados para guardar ou analisar.</string>
     <string name="export_json">Backup JSON</string>
