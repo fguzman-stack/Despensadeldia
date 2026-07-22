@@ -53,15 +53,15 @@ val BorderDark = Color(0xFF314137)
 val BorderMedium = Color(0xFF4A5A4E)
 val BorderLight = Color(0xFFD6D3CD)
 
-// ─── Tema Premium (Gourmet Boutique) ──────────────────────
-val PremiumBackground = Color(0xFF161019)
-val PremiumSurface = Color(0xFF231A26)
-val PremiumSurfaceVariant = Color(0xFF332638)
-val PremiumBorder = Color(0xFF4A3A52)
-val PremiumTextPrimary = Color(0xFFF7EBEB)
-val PremiumTextSecondary = Color(0xFFC7B3CA)
-val PremiumAction = Color(0xFFD4AF37)
-val PremiumAttention = Color(0xFFE27D60)
-val PremiumUrgency = Color(0xFFC84B31)
-val PremiumDonation = Color(0xFF85B09A)
-val PremiumAccent = Color(0xFFF3E5AB)
+// ─── Tema Frutas en Fiesta (Fruit Pop) ────────────────────
+val PremiumBackground = Color(0xFF1A0F14)           // Deep berry
+val PremiumSurface = Color(0xFF2A1A22)              // Dark plum
+val PremiumSurfaceVariant = Color(0xFF3D2430)       // Berry variant
+val PremiumBorder = Color(0xFF5A2A3A)               // Berry border
+val PremiumTextPrimary = Color(0xFFFFF0F0)          // Soft pink-white
+val PremiumTextSecondary = Color(0xFFD4B8C4)        // Mauve
+val PremiumAction = Color(0xFFFF6B81)               // Watermelon pink
+val PremiumAttention = Color(0xFFF9CA24)            // Pineapple yellow
+val PremiumUrgency = Color(0xFFD63031)              // Strawberry red
+val PremiumDonation = Color(0xFF7BC67E)             // Kiwi green
+val PremiumAccent = Color(0xFFFF9F43)               // Mango orange

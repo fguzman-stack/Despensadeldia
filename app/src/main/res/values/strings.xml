@@ -167,7 +167,8 @@
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
-    <string name="theme_astral">Premium</string>
+    <string name="theme_fruit_pop">Fruit Pop</string>
+    <string name="theme_astral">Fruit Pop</string>
     <string name="section_data">Data and Backup</string>
     <string name="data_description">Export your data to keep or analyze it.</string>
     <string name="export_json">JSON Backup</string>

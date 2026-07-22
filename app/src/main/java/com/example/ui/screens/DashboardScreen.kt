@@ -644,25 +644,124 @@ fun EmptyStateView(
 
 // ─── Add/Edit Product Dialog with Quick & Full modes ───────────────
 
+// Comprehensive units list — every way food is sold
+val allUnits = listOf(
+    "uds", "kg", "g", "mg", "L", "ml", "cl",
+    "paquete", "caja", "bolsa", "botella", "lata",
+    "frasco", "tubo", "tarro", "pote", "bandeja",
+    "manojo", "pieza", "rebanada", "rodaja", "trozo",
+    "barra", "litro", "galón", "onza", "libra",
+    "sobre", "sachet", "cápsula", "pastilla", "tableta",
+    "envase", "unidad"
+)
+
+// Smart units per category — shows relevant units first, falls back to allUnits
+val categoryUnits: Map<ProductCategory, List<String>> = mapOf(
+    ProductCategory.PRODUCE to listOf("kg", "g", "uds", "manojo", "bolsa", "pieza", "bandeja"),
+    ProductCategory.DAIRY_EGGS to listOf("uds", "L", "ml", "paquete", "caja", "kg", "pote", "barra", "frasco"),
+    ProductCategory.MEAT_SEAFOOD to listOf("kg", "g", "uds", "bandeja", "pieza", "paquete"),
+    ProductCategory.BEVERAGES to listOf("L", "ml", "uds", "caja", "botella", "lata", "litro", "cl"),
+    ProductCategory.PANTRY to listOf("kg", "g", "uds", "paquete", "bolsa", "caja", "sobre", "frasco", "lata", "envase"),
+    ProductCategory.BAKERY to listOf("uds", "kg", "g", "paquete", "rebanada", "barra", "pieza", "bolsa"),
+    ProductCategory.FROZEN to listOf("uds", "kg", "g", "paquete", "caja", "bolsa", "bandeja"),
+    ProductCategory.MEDICINE to listOf("uds", "caja", "tubo", "frasco", "pastilla", "tableta", "cápsula", "sachet"),
+    ProductCategory.CLEANING to listOf("L", "ml", "uds", "botella", "frasco", "envase", "galón", "cl"),
+    ProductCategory.PET_SUPPLIES to listOf("kg", "g", "uds", "paquete", "bolsa", "lata", "sobre", "sachet"),
+    ProductCategory.OTHER to allUnits
+)
+
+fun unitsForCategory(category: ProductCategory): List<String> =
+    categoryUnits[category] ?: allUnits
+
 data class ProductTemplate(
     val name: String,
     val category: ProductCategory,
-    val defaultLocation: ProductLocation = ProductLocation.FRIDGE
+    val defaultLocation: ProductLocation = ProductLocation.FRIDGE,
+    val defaultUnit: String = "uds"
 )
 
 val quickTemplates = listOf(
-    ProductTemplate("Leche", ProductCategory.DAIRY_EGGS, ProductLocation.FRIDGE),
-    ProductTemplate("Huevos", ProductCategory.DAIRY_EGGS, ProductLocation.FRIDGE),
-    ProductTemplate("Yogur", ProductCategory.DAIRY_EGGS, ProductLocation.FRIDGE),
-    ProductTemplate("Pollo", ProductCategory.MEAT_SEAFOOD, ProductLocation.FRIDGE),
-    ProductTemplate("Queso", ProductCategory.DAIRY_EGGS, ProductLocation.FRIDGE),
-    ProductTemplate("Pan", ProductCategory.BAKERY, ProductLocation.PANTRY),
-    ProductTemplate("Frutas", ProductCategory.PRODUCE, ProductLocation.FRIDGE),
-    ProductTemplate("Verduras", ProductCategory.PRODUCE, ProductLocation.FRIDGE),
-    ProductTemplate("Arroz", ProductCategory.PANTRY, ProductLocation.PANTRY),
-    ProductTemplate("Fideos", ProductCategory.PANTRY, ProductLocation.PANTRY),
-    ProductTemplate("Alimento mascota", ProductCategory.PET_SUPPLIES, ProductLocation.PETS),
+    ProductTemplate("Leche", ProductCategory.DAIRY_EGGS, ProductLocation.FRIDGE, "L"),
+    ProductTemplate("Huevos", ProductCategory.DAIRY_EGGS, ProductLocation.FRIDGE, "uds"),
+    ProductTemplate("Yogur", ProductCategory.DAIRY_EGGS, ProductLocation.FRIDGE, "uds"),
+    ProductTemplate("Pollo", ProductCategory.MEAT_SEAFOOD, ProductLocation.FRIDGE, "kg"),
+    ProductTemplate("Queso", ProductCategory.DAIRY_EGGS, ProductLocation.FRIDGE, "kg"),
+    ProductTemplate("Pan", ProductCategory.BAKERY, ProductLocation.PANTRY, "uds"),
+    ProductTemplate("Frutas", ProductCategory.PRODUCE, ProductLocation.FRIDGE, "kg"),
+    ProductTemplate("Verduras", ProductCategory.PRODUCE, ProductLocation.FRIDGE, "kg"),
+    ProductTemplate("Arroz", ProductCategory.PANTRY, ProductLocation.PANTRY, "kg"),
+    ProductTemplate("Fideos", ProductCategory.PANTRY, ProductLocation.PANTRY, "paquete"),
+    ProductTemplate("Alimento mascota", ProductCategory.PET_SUPPLIES, ProductLocation.PETS, "kg"),
+    ProductTemplate("Atún", ProductCategory.PANTRY, ProductLocation.PANTRY, "lata"),
+    ProductTemplate("Coca-Cola", ProductCategory.BEVERAGES, ProductLocation.PANTRY, "L"),
+    ProductTemplate("Agua", ProductCategory.BEVERAGES, ProductLocation.PANTRY, "L"),
+    ProductTemplate("Cerveza", ProductCategory.BEVERAGES, ProductLocation.FRIDGE, "uds"),
+    ProductTemplate("Mantequilla", ProductCategory.DAIRY_EGGS, ProductLocation.FRIDGE, "barra"),
+    ProductTemplate("Carne molida", ProductCategory.MEAT_SEAFOOD, ProductLocation.FREEZER, "kg"),
+    ProductTemplate("Pescado", ProductCategory.MEAT_SEAFOOD, ProductLocation.FREEZER, "kg"),
+    ProductTemplate("Pan tajado", ProductCategory.BAKERY, ProductLocation.PANTRY, "paquete"),
+    ProductTemplate("Jabón", ProductCategory.CLEANING, ProductLocation.CLEANING, "uds"),
 )
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UnitField(
+    unit: String,
+    onUnitChange: (String) -> Unit,
+    category: ProductCategory,
+    unitExpanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val unitFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = MaterialTheme.colorScheme.primary,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+        focusedContainerColor = MaterialTheme.colorScheme.surface,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+        cursorColor = MaterialTheme.colorScheme.primary
+    )
+    val relevantUnits = remember(unit, category) {
+        val all = unitsForCategory(category)
+        // Include current unit at top even if custom
+        if (unit.isNotBlank() && unit !in all) listOf(unit) + all else all
+    }
+
+    ExposedDropdownMenuBox(
+        expanded = unitExpanded,
+        onExpandedChange = onExpandedChange,
+        modifier = modifier
+    ) {
+        OutlinedTextField(
+            value = unit,
+            onValueChange = { onUnitChange(it); onExpandedChange(true) },
+            label = { Text("Unidad") },
+            placeholder = { Text("uds, kg, L…") },
+            colors = unitFieldColors,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
+            modifier = Modifier.menuAnchor().fillMaxWidth(),
+            singleLine = true
+        )
+        ExposedDropdownMenu(expanded = unitExpanded, onDismissRequest = { onExpandedChange(false) }) {
+            val displayUnits = if (unit.isNotBlank() && unit !in relevantUnits) {
+                listOf(unit) + "— personalizado —" + relevantUnits
+            } else relevantUnits
+            displayUnits.forEach { u ->
+                if (u.startsWith("—")) {
+                    DropdownMenuItem(
+                        text = { Text(u, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall) },
+                        onClick = { onExpandedChange(false) },
+                        enabled = false
+                    )
+                } else {
+                    DropdownMenuItem(
+                        text = { Text(u) },
+                        onClick = { onUnitChange(u); onExpandedChange(false) }
+                    )
+                }
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -710,7 +809,6 @@ fun AddEditProductDialog(
     var categoryExpanded by remember { mutableStateOf(false) }
     var unitExpanded by remember { mutableStateOf(false) }
 
-    val units = listOf("uds", "kg", "g", "L", "ml", "paquete", "caja", "bolsa")
     val fieldColors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor = MaterialTheme.colorScheme.primary,
         unfocusedBorderColor = MaterialTheme.colorScheme.outline,
@@ -722,7 +820,8 @@ fun AddEditProductDialog(
     // Validation: name required; date only required if expiryType != NONE
     val isValid = name.isNotBlank() && (expiryType == ExpiryType.NONE || selectedDateInMillis > 0)
 
-    AlertDialog(
+    if (!showBarcodeScanner) {
+        AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
@@ -794,11 +893,12 @@ fun AddEditProductDialog(
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         items(quickTemplates) { template ->
                             AssistChip(
-                                onClick = {
-                                    name = template.name
-                                    category = template.category
-                                    location = template.defaultLocation
-                                },
+                onClick = {
+                    name = template.name
+                    category = template.category
+                    location = template.defaultLocation
+                    unit = template.defaultUnit
+                },
                                 label = { Text(template.name, style = MaterialTheme.typography.labelMedium) },
                                 shape = RoundedCornerShape(10.dp)
                             )
@@ -816,6 +916,28 @@ fun AddEditProductDialog(
                     singleLine = true
                 )
 
+                // Quantity + Unit (always visible)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = quantityStr,
+                        onValueChange = { quantityStr = it },
+                        label = { Text(stringResource(R.string.quantity)) },
+                        colors = fieldColors,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        modifier = Modifier.weight(1f),
+                        singleLine = true
+                    )
+                    // Smart unit selector — editable with category-smart dropdown
+                    UnitField(
+                        unit = unit,
+                        onUnitChange = { unit = it },
+                        category = category,
+                        unitExpanded = unitExpanded,
+                        onExpandedChange = { unitExpanded = it },
+                        modifier = Modifier.weight(0.8f)
+                    )
+                }
+
                 // Barcode scan button
                 OutlinedButton(
                     onClick = { showBarcodeScanner = true },
@@ -829,6 +951,40 @@ fun AddEditProductDialog(
                         else "Escanear código de barras",
                         style = MaterialTheme.typography.labelLarge
                     )
+                }
+
+                // Smart category selector — always visible now so units adapt
+                ExposedDropdownMenuBox(
+                    expanded = categoryExpanded,
+                    onExpandedChange = { categoryExpanded = !categoryExpanded },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = categoryDisplayName(category),
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text(stringResource(R.string.category)) },
+                        colors = fieldColors,
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
+                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(expanded = categoryExpanded, onDismissRequest = { categoryExpanded = false }) {
+                        allCategoryNames.forEach { catName ->
+                            val cat = stringToCategory(catName)
+                            DropdownMenuItem(
+                                text = { Text(categoryDisplayName(cat)) },
+                                onClick = {
+                                    category = cat
+                                    categoryExpanded = false
+                                    // Smart: switch unit to first suggestion of new category if current unit doesn't fit
+                                    val newUnits = unitsForCategory(cat)
+                                    if (unit !in newUnits && newUnits.isNotEmpty()) {
+                                        unit = newUnits.first()
+                                    }
+                                }
+                            )
+                        }
+                    }
                 }
 
                 // Location chips
@@ -942,34 +1098,8 @@ fun AddEditProductDialog(
                     Text(if (showFullMode) stringResource(R.string.less_details) else stringResource(R.string.more_details))
                 }
 
-                // Full mode fields
+                // Full mode fields (price, brand, min stock, notes — category & qty are always visible now)
                 if (showFullMode) {
-                    // Category
-                    ExposedDropdownMenuBox(
-                        expanded = categoryExpanded,
-                        onExpandedChange = { categoryExpanded = !categoryExpanded },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        OutlinedTextField(
-                            value = categoryDisplayName(category),
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text(stringResource(R.string.category)) },
-                            colors = fieldColors,
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
-                            modifier = Modifier.menuAnchor().fillMaxWidth()
-                        )
-                        ExposedDropdownMenu(expanded = categoryExpanded, onDismissRequest = { categoryExpanded = false }) {
-                            allCategoryNames.forEach { catName ->
-                                val cat = stringToCategory(catName)
-                                DropdownMenuItem(
-                                    text = { Text(categoryDisplayName(cat)) },
-                                    onClick = { category = cat; categoryExpanded = false }
-                                )
-                            }
-                        }
-                    }
-
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
                             value = priceStr,
@@ -980,41 +1110,7 @@ fun AddEditProductDialog(
                             modifier = Modifier.weight(1f),
                             singleLine = true
                         )
-                        // Unit selector
-                        ExposedDropdownMenuBox(
-                            expanded = unitExpanded,
-                            onExpandedChange = { unitExpanded = !unitExpanded },
-                            modifier = Modifier.weight(0.8f)
-                        ) {
-                            OutlinedTextField(
-                                value = unit,
-                                onValueChange = {},
-                                readOnly = true,
-                                label = { Text(stringResource(R.string.unit)) },
-                                colors = fieldColors,
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
-                                modifier = Modifier.menuAnchor().fillMaxWidth()
-                            )
-                            ExposedDropdownMenu(expanded = unitExpanded, onDismissRequest = { unitExpanded = false }) {
-                                units.forEach { u ->
-                                    DropdownMenuItem(
-                                        text = { Text(u) },
-                                        onClick = { unit = u; unitExpanded = false }
-                                    )
-                                }
-                            }
-                        }
                     }
-
-                    OutlinedTextField(
-                        value = quantityStr,
-                        onValueChange = { quantityStr = it },
-                        label = { Text(stringResource(R.string.quantity)) },
-                        colors = fieldColors,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
 
                     OutlinedTextField(
                         value = brand,
@@ -1048,6 +1144,7 @@ fun AddEditProductDialog(
             }
         }
     )
+    }
 
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(initialSelectedDateMillis = selectedDateInMillis)
@@ -1072,5 +1169,4 @@ fun AddEditProductDialog(
         )
     }
 }
-
 

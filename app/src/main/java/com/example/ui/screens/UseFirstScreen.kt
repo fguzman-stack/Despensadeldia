@@ -354,13 +354,13 @@ fun UseFirstScreen(
 @Composable
 fun AmbientGradientBackground() {
     val bg = MaterialTheme.colorScheme.background
-    val isAstral = bg == Color(0xFF080A18)
-    val isDark = bg == Color(0xFF101814) || isAstral
-    val colors = if (isAstral) {
+    val isFruitPop = bg == Color(0xFF1A0F14)
+    val isDark = bg == Color(0xFF101814) || isFruitPop
+    val colors = if (isFruitPop) {
         listOf(
-            Color(0xFF080A18),
-            Color(0xFF0C0F24),
-            Color(0xFF0A0C1E)
+            Color(0xFF1A0F14),
+            Color(0xFF2A1522),
+            Color(0xFF22101A)
         )
     } else if (isDark) {
         listOf(
@@ -395,10 +395,10 @@ fun UrgencyHeroCard(
     todayCount: Int
 ) {
     val bg = MaterialTheme.colorScheme.background
-    val isAstral = bg == Color(0xFF080A18)
-    val isDark = bg == Color(0xFF101814) || isAstral
-    val gradientStart = if (isAstral) Color(0xFF1A2040) else if (isDark) Color(0xFF1A3A2A) else Color(0xFFE8F5EE)
-    val gradientEnd = if (isAstral) Color(0xFF141A33) else if (isDark) Color(0xFF1E3028) else Color(0xFFF5F0E0)
+    val isFruitPop = bg == Color(0xFF1A0F14)
+    val isDark = bg == Color(0xFF101814) || isFruitPop
+    val gradientStart = if (isFruitPop) Color(0xFF2A1A2A) else if (isDark) Color(0xFF1A3A2A) else Color(0xFFE8F5EE)
+    val gradientEnd = if (isFruitPop) Color(0xFF1F1520) else if (isDark) Color(0xFF1E3028) else Color(0xFFF5F0E0)
 
     val animatedCount by animateIntAsState(
         targetValue = totalUrgent,

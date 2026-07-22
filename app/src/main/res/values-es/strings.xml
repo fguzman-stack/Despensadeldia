@@ -156,7 +156,8 @@
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Oscuro</string>
-    <string name="theme_astral">Premium</string>
+    <string name="theme_fruit_pop">Frutas en Fiesta</string>
+    <string name="theme_astral">Frutas en Fiesta</string>
     <string name="section_data">Datos y Respaldo</string>
     <string name="data_description">Exporta tus datos para guardarlos o analizarlos.</string>
     <string name="export_json">Respaldo JSON</string>
