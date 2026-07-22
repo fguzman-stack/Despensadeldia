@@ -18,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -32,10 +31,7 @@ import com.example.data.local.Product
 import com.example.data.local.ProductCategory
 import com.example.data.local.ProductFrequent
 import com.example.data.local.ProductLocation
-import com.example.ui.ads.AdManager
-import com.example.ui.ads.AdState
-import com.example.ui.ads.NATIVE_AD_UNIT_ID
-import com.example.ui.ads.NativeAdCard
+
 import com.example.ui.theme.Emerald
 import com.example.ui.theme.Amber
 import com.example.ui.theme.Coral
@@ -63,11 +59,6 @@ fun DashboardScreen(
     val activeProducts by viewModel.activeProductsState.collectAsState()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-
-    val context = LocalContext.current
-    LaunchedEffect(Unit) {
-        AdManager.loadNativeAd(context, NATIVE_AD_UNIT_ID)
-    }
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf<String?>(null) }
@@ -301,13 +292,6 @@ fun DashboardScreen(
                                 }
                             }
                         )
-                    }
-
-                    if (filteredProducts.isNotEmpty()) {
-                        item(key = "native_ad") {
-                            val adState by AdManager.adState.collectAsState()
-                            NativeAdCard(adState = adState)
-                        }
                     }
 
                     items(afterAd, key = { it.id }) { product ->
@@ -661,12 +645,12 @@ val categoryUnits: Map<ProductCategory, List<String>> = mapOf(
     ProductCategory.DAIRY_EGGS to listOf("uds", "L", "ml", "paquete", "caja", "kg", "pote", "barra", "frasco"),
     ProductCategory.MEAT_SEAFOOD to listOf("kg", "g", "uds", "bandeja", "pieza", "paquete"),
     ProductCategory.BEVERAGES to listOf("L", "ml", "uds", "caja", "botella", "lata", "litro", "cl"),
-    ProductCategory.PANTRY to listOf("kg", "g", "uds", "paquete", "bolsa", "caja", "sobre", "frasco", "lata", "envase"),
+    ProductCategory.PANTRY to listOf("kg", "g", "uds", "ml", "paquete", "bolsa", "caja", "sobre", "frasco", "lata", "envase", "botella"),
     ProductCategory.BAKERY to listOf("uds", "kg", "g", "paquete", "rebanada", "barra", "pieza", "bolsa"),
     ProductCategory.FROZEN to listOf("uds", "kg", "g", "paquete", "caja", "bolsa", "bandeja"),
-    ProductCategory.MEDICINE to listOf("uds", "caja", "tubo", "frasco", "pastilla", "tableta", "cápsula", "sachet"),
+    ProductCategory.MEDICINE to listOf("uds", "ml", "caja", "tubo", "frasco", "pastilla", "tableta", "cápsula", "sachet"),
     ProductCategory.CLEANING to listOf("L", "ml", "uds", "botella", "frasco", "envase", "galón", "cl"),
-    ProductCategory.PET_SUPPLIES to listOf("kg", "g", "uds", "paquete", "bolsa", "lata", "sobre", "sachet"),
+    ProductCategory.PET_SUPPLIES to listOf("kg", "g", "uds", "ml", "paquete", "bolsa", "lata", "sobre", "sachet"),
     ProductCategory.OTHER to allUnits
 )
 

@@ -167,8 +167,7 @@
     <string name="privacy_description">Toda tu información se guarda solo en este dispositivo. No usamos servidores en la nube.</string>
     <string name="privacy_detail">Despensa al Día fue construida con la privacidad en mente.\n\n• Tus datos (inventario, configuraciones, listas) se guardan localmente en tu dispositivo mediante una base de datos interna (Room).\n• No requerimos cuentas, correos ni contraseñas.\n• No compartimos ni enviamos tus hábitos de consumo a ningún servidor externo.\n• Si desinstalas la app, tus datos se perderán a menos que uses la función de Respaldo JSON.\n\nTu despensa, tus reglas, tu privacidad.</string>
     <string name="understood">Entendido</string>
-    <string name="ad_privacy_options">Opciones de privacidad publicitaria</string>
-    <string name="ad_privacy_description">Configura si se muestran anuncios personalizados</string>
+
 
     <string name="setup_title">Preferencias</string>
     <string name="setup_message">Configura tu región para mostrar correctamente la moneda y formato de fecha.</string>

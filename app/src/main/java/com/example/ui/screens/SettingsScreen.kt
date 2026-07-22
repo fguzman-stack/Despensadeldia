@@ -35,7 +35,6 @@ import androidx.core.content.ContextCompat
 import com.example.MainActivity
 import com.example.data.local.AppSettings
 import com.example.receiver.NotificationReceiver
-import com.example.ui.ads.ConsentManager
 import com.example.ui.viewmodel.PantryViewModel
 import com.example.utils.BackupHelper
 import kotlinx.coroutines.launch
@@ -49,8 +48,6 @@ fun SettingsScreen(
     val context = LocalContext.current
     val settings by viewModel.settingsState.collectAsState()
 
-    var countryName by remember { mutableStateOf("") }
-    var currencyCode by remember { mutableStateOf("") }
     var currencySymbol by remember { mutableStateOf("") }
     var selectedTheme by remember { mutableStateOf("SYSTEM") }
     var notificationEnabled by remember { mutableStateOf(true) }
@@ -60,8 +57,6 @@ fun SettingsScreen(
     // Initialize state from DB values
     LaunchedEffect(settings) {
         settings?.let {
-            countryName = it.countryName
-            currencyCode = it.currencyCode
             currencySymbol = it.currencySymbol
             selectedTheme = it.theme
             notificationEnabled = it.notificationEnabled
@@ -76,7 +71,7 @@ fun SettingsScreen(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
             notificationEnabled = isGranted
-            saveChanges(viewModel, settings, countryName, currencyCode, currencySymbol, selectedTheme, isGranted, notificationHour, notificationMinute, context)
+            saveChanges(viewModel, settings, currencySymbol, selectedTheme, isGranted, notificationHour, notificationMinute, context)
         }
     )
     
@@ -100,49 +95,7 @@ fun SettingsScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            // 1. Regional Configuration Section
-            SettingsSection(title = stringResource(R.string.section_localization)) {
-                OutlinedTextField(
-                    value = countryName,
-                    onValueChange = {
-                        countryName = it
-                        saveChanges(viewModel, settings, countryName, currencyCode, currencySymbol, selectedTheme, notificationEnabled, notificationHour, notificationMinute, context)
-                    },
-                    label = { Text(stringResource(R.string.country_label)) },
-                    leadingIcon = { Icon(Icons.Filled.Public, contentDescription = null) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth().testTag("settings_country_input")
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    OutlinedTextField(
-                        value = currencyCode,
-                        onValueChange = {
-                            currencyCode = it.uppercase()
-                            saveChanges(viewModel, settings, countryName, currencyCode, currencySymbol, selectedTheme, notificationEnabled, notificationHour, notificationMinute, context)
-                        },
-                        label = { Text(stringResource(R.string.currency_label)) },
-                        singleLine = true,
-                        modifier = Modifier.weight(1f).testTag("settings_currency_code_input")
-                    )
-
-                    OutlinedTextField(
-                        value = currencySymbol,
-                        onValueChange = {
-                            currencySymbol = it
-                            saveChanges(viewModel, settings, countryName, currencyCode, currencySymbol, selectedTheme, notificationEnabled, notificationHour, notificationMinute, context)
-                        },
-                        label = { Text(stringResource(R.string.symbol_label)) },
-                        singleLine = true,
-                        modifier = Modifier.weight(1f).testTag("settings_currency_symbol_input")
-                    )
-                }
-            }
-
-            // 2. Notification Schedule Section
+            // 1. Notification Schedule Section
             SettingsSection(title = stringResource(R.string.section_notifications)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -173,11 +126,11 @@ fun SettingsScreen(
                                     permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
                                 } else {
                                     notificationEnabled = true
-                                    saveChanges(viewModel, settings, countryName, currencyCode, currencySymbol, selectedTheme, true, notificationHour, notificationMinute, context)
+                                    saveChanges(viewModel, settings, currencySymbol, selectedTheme, true, notificationHour, notificationMinute, context)
                                 }
                             } else {
                                 notificationEnabled = isChecked
-                                saveChanges(viewModel, settings, countryName, currencyCode, currencySymbol, selectedTheme, isChecked, notificationHour, notificationMinute, context)
+                                saveChanges(viewModel, settings, currencySymbol, selectedTheme, isChecked, notificationHour, notificationMinute, context)
                             }
                         },
                         modifier = Modifier.testTag("settings_notifications_switch")
@@ -252,7 +205,7 @@ fun SettingsScreen(
                                 )
                                 .clickable {
                                     selectedTheme = themeCode
-                                    saveChanges(viewModel, settings, countryName, currencyCode, currencySymbol, selectedTheme, notificationEnabled, notificationHour, notificationMinute, context)
+                                    saveChanges(viewModel, settings, currencySymbol, selectedTheme, notificationEnabled, notificationHour, notificationMinute, context)
                                 }
                                 .padding(8.dp),
                             contentAlignment = Alignment.Center
@@ -294,20 +247,6 @@ fun SettingsScreen(
                         onClick = { 
                             scope.launch {
                                 val products = viewModel.getAllProductsDirect()
-                                BackupHelper.exportToJson(context, products)
-                            }
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Filled.Code, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.export_json))
-                    }
-
-                    OutlinedButton(
-                        onClick = { 
-                            scope.launch {
-                                val products = viewModel.getAllProductsDirect()
                                 BackupHelper.exportToCsv(context, products)
                             }
                         },
@@ -331,16 +270,7 @@ fun SettingsScreen(
                         .clickable { showPrivacyDialog = true }
                 )
 
-                if (ConsentManager.canShowPrivacyOptions()) {
-                    ListItem(
-                        headlineContent = { Text(stringResource(R.string.ad_privacy_options)) },
-                        supportingContent = { Text(stringResource(R.string.ad_privacy_description)) },
-                        leadingContent = { Icon(Icons.Filled.Shield, contentDescription = null) },
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .clickable { ConsentManager.showPrivacyOptions(context as MainActivity) }
-                    )
-                }
+
             }
         }
     }
@@ -371,7 +301,7 @@ fun SettingsScreen(
                     onClick = {
                         notificationHour = tempHour
                         notificationMinute = tempMinute
-                        saveChanges(viewModel, settings, countryName, currencyCode, currencySymbol, selectedTheme, notificationEnabled, notificationHour, notificationMinute, context)
+                        saveChanges(viewModel, settings, currencySymbol, selectedTheme, notificationEnabled, notificationHour, notificationMinute, context)
                         showTimeDialog = false
                     }
                 ) {
@@ -488,8 +418,6 @@ fun NumberSelector(
 private fun saveChanges(
     viewModel: PantryViewModel,
     existing: AppSettings?,
-    country: String,
-    currencyCode: String,
     currencySymbol: String,
     theme: String,
     enabled: Boolean,
@@ -500,8 +428,6 @@ private fun saveChanges(
     val current = existing ?: AppSettings()
     viewModel.saveFullSettings(
         current.copy(
-            countryName = country,
-            currencyCode = currencyCode,
             currencySymbol = currencySymbol,
             theme = theme,
             notificationEnabled = enabled,

@@ -69,8 +69,6 @@ dependencies {
   implementation(libs.androidx.room.runtime)
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)
-  implementation(libs.play.services.ads)
-  implementation(libs.user.messaging.platform)
   implementation(libs.mlkit.barcode.scanning)
   implementation(libs.androidx.camera.camera2)
   implementation(libs.androidx.camera.lifecycle)
