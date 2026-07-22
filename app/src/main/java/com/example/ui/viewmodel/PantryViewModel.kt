@@ -12,6 +12,7 @@ import com.example.data.local.ProductLocation
 import com.example.data.local.ProductStatus
 import com.example.data.recipe.RecipeCatalog
 import com.example.data.repository.PantryRepository
+import com.example.utils.isCurrentlySnoozed
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -98,8 +99,19 @@ class PantryViewModel(
 
     val recipeSuggestions: StateFlow<List<RecipeCatalog.RecipeMatch>> = activeProductsState
         .map { activeProducts ->
+            val now = System.currentTimeMillis()
+            val zone = java.time.ZoneId.systemDefault()
+            val today = java.time.Instant.ofEpochMilli(now).atZone(zone).toLocalDate()
+            val urgentNames = activeProducts
+                .filter { p ->
+                    val expiry = p.expirationDate
+                    expiry != null && java.time.Instant.ofEpochMilli(expiry).atZone(zone).toLocalDate() <= today.plusDays(7)
+                }
+                .filterNot { it.isCurrentlySnoozed(now) }
+                .map { it.name.lowercase().trim() }
+                .toSet()
             val ingredientNames = activeProducts.map { it.name.lowercase().trim() }.toSet()
-            RecipeCatalog.findRecipesByIngredients(ingredientNames, minMatch = 1)
+            RecipeCatalog.findRecipesByIngredients(ingredientNames, urgentNames, minMatch = 1)
         }
         .stateIn(
             scope = viewModelScope,
@@ -312,11 +324,18 @@ class PantryViewModel(
 
     // ─── Snooze ────────────────────────────────────────────────────
 
-    fun snoozeProduct(product: Product, snoozeUntilTimestamp: Long) {
+    fun snoozeProduct(product: Product, days: Int) {
         viewModelScope.launch {
-            repository.updateProduct(
-                product.copy(snoozeUntil = snoozeUntilTimestamp)
-            )
+            val now = System.currentTimeMillis()
+            require(days in setOf(1, 3, 7))
+            val until = now + days * 24L * 60 * 60 * 1000
+            repository.snoozeProduct(product.id, until)
+        }
+    }
+
+    fun clearProductSnooze(product: Product) {
+        viewModelScope.launch {
+            repository.snoozeProduct(product.id, null)
         }
     }
 

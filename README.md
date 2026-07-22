@@ -40,7 +40,8 @@
   - [⚙️ Ajustes y Personalización](#10-ajustes)
   - [🔔 Notificaciones y Widget](#11-notificaciones-y-widget)
   - [📤 Exportación de Datos](#12-exportación)
-- [🎨 Identidad Visual — Jardín de Frescura](#-identidad-visual--jardín-de-frescura)
+  - [⏰ Posponer y Repaso Rápido](#13-posponer-y-repaso-rápido) <!-- NUEVO -->
+- [🎨 Identidad Visual — Temas y Colores](#-identidad-visual--temas-y-colores) <!-- ACTUALIZADO -->
 - [🏗️ Arquitectura](#️-arquitectura)
 - [🗂️ Estructura del Proyecto](#️-estructura-del-proyecto)
 - [🔧 Tecnologías](#-tecnologías)
@@ -284,21 +285,40 @@ fun markAsConsumed(product: Product) {
 }
 ```
 
-### 6. Clasificación por urgencia — lógica diaria
+### 6. Clasificación por urgencia — `UrgencyUtils`
 
-El corazón de "Usa Primero" es esta clasificación temporal que agrupa productos según su fecha de vencimiento. No depende de ningún servicio externo y se ejecuta íntegramente en el composable.
+El corazón de "Usa Primero" es el sistema de `UrgencyBucket` con `java.time.LocalDate` para evitar errores de zona horaria. Los productos pospuestos (`snoozeUntil > now`) se filtran automáticamente sin modificar su `expirationDate`.
 
 ```kotlin
-val now = System.currentTimeMillis()
-val oneDayMs = 24L * 60 * 60 * 1000
-val todayEnd = now + oneDayMs
-val tomorrowEnd = now + 2 * oneDayMs
-val weekEnd = now + 7 * oneDayMs
+enum class UrgencyBucket { EXPIRED, TODAY, TOMORROW, THIS_WEEK, NONE }
 
-val expired = urgentProducts.filter { it.expirationDate!! < now }
-val expiringToday = urgentProducts.filter { it.expirationDate!! in now until todayEnd }
-val expiringTomorrow = urgentProducts.filter { it.expirationDate!! in todayEnd until tomorrowEnd }
-val expiringThisWeek = urgentProducts.filter { it.expirationDate!! in tomorrowEnd until weekEnd }
+data class UrgentProduct(val product: Product, val bucket: UrgencyBucket)
+
+fun Product.urgencyBucket(nowMillis: Long, zoneId: ZoneId): UrgencyBucket {
+    val today = Instant.ofEpochMilli(nowMillis).atZone(zoneId).toLocalDate()
+    val expiryDate = expirationDate?.let { 
+        Instant.ofEpochMilli(it).atZone(zoneId).toLocalDate() 
+    } ?: return NONE
+    return when {
+        expiryDate.isBefore(today) -> EXPIRED
+        expiryDate == today        -> TODAY
+        expiryDate == today.plusDays(1) -> TOMORROW
+        expiryDate <= today.plusDays(7) -> THIS_WEEK
+        else -> NONE
+    }
+}
+
+fun Product.isCurrentlySnoozed(nowMillis: Long): Boolean = 
+    snoozeUntil?.let { it > nowMillis } == true
+
+fun List<Product>.getUrgentProducts(): List<UrgentProduct> =
+    this.asSequence()
+        .filterNot { it.isCurrentlySnoozed() }
+        .map { UrgentProduct(it, it.urgencyBucket()) }
+        .filter { it.bucket != NONE }
+        .sortedWith(compareBy<UrgentProduct> { it.bucket.ordinal }
+            .thenBy { it.product.expirationDate ?: Long.MAX_VALUE })
+        .toList()
 ```
 
 ### 7. ViewModel compartido — `PantryViewModel`
@@ -566,7 +586,7 @@ class PantryViewModel(application: Application) : AndroidViewModel(application) 
 
 | Si... | Entonces... |
 |:---|---|
-| Tocas "Revisar lo que ya tienes" | La app cruza tu lista contra tu inventario y te dice qué ya tienes |
+| Tocas "Revisar lo que ya tienes" | La app cruza tu lista contra tu inventario ignorando **mayúsculas, tildes y espacios repetidos** (ej. "café" coincide con "CAFE") |
 | Compartes la lista | Se envía como texto plano vía WhatsApp, email, etc. |
 | Limpias comprados | Se borran todos los items marcados como comprados |
 | Añades un item que ya existe | No se duplica (se ignora) |
@@ -638,7 +658,8 @@ class PantryViewModel(application: Application) : AndroidViewModel(application) 
 | No tienes ningún ingrediente de ninguna receta | Aparece mensaje "No hay recetas disponibles" |
 | Tienes todos los ingredientes | La receta aparece como "✓ Completa" |
 | Te falta algún ingrediente | Se muestra en rojo cuáles faltan |
-| Hay muchas recetas coincidentes | Se ordenan por la que más ingredientes tienes |
+| Hay muchas recetas coincidentes | Se ordenan por las que usan **más ingredientes urgentes** primero |
+| Tienes productos por vencer | Las recetas que los usan aparecen al principio de la lista |
 | Tocas "Ver pasos" | Se despliegan ingredientes detallados y paso a paso |
 
 ---
@@ -863,9 +884,121 @@ Leche,DAIRY_EGGS,2.50,1,L,FRIDGE,FIXED,1782345600000,ACTIVE,,Marca Ejemplo,
 
 ---
 
-## 🎨 Identidad Visual — Jardín de Frescura
+### 13. ⏰ Posponer y Repaso Rápido
 
-El diseño de Despensa al Día sigue el tema **Jardín de Frescura**: una identidad visual premium, cálida y serena, inspirada en el ciclo natural de los alimentos.
+**¿Qué hace?** Posponer oculta productos urgentes temporalmente sin modificar su fecha de vencimiento real. El Repaso Rápido permite resolver productos uno por uno con acciones rápidas y opción de posponer.
+
+```
+  ┌─────────────────────────────────────┐
+  │  ⏰ Posponer aviso de Leche          │
+  │  La fecha de vencimiento no cambiará │
+  │  ┌─────────────────────────────────┐│
+  │  │ ⏰ 1 día                        ││
+  │  │ ⏰ 3 días                       ││
+  │  │ ⏰ 7 días                       ││
+  │  └─────────────────────────────────┘│
+  │              [Cancelar]             │
+  └─────────────────────────────────────┘
+
+  ┌─── Repaso Rápido ───────────────────┐
+  │  🔄 3 de 8                          │
+  │  ████████░░░░░░░░░░░░               │
+  │                                     │
+  │         🥛 Leche                    │
+  │      Vencido · 1L · 🧊 Nevera       │
+  │                                     │
+  │  [✅ Consumido]  [🎁 Donado]        │
+  │  [⏰ Posponer]    [⏭ Saltar]        │
+  └─────────────────────────────────────┘
+```
+
+**Flujo completo:**
+
+1. Tocas "Posponer" en un producto urgente → se abre diálogo con 1, 3 o 7 días
+2. El producto desaparece de "Usa Primero" hasta que `snoozeUntil` se cumpla
+3. Para cancelar, puedes editar el producto y limpiar el campo snooze
+4. Tocas "Repaso Rápido" → se abre un bottom sheet con productos uno a uno
+5. Puedes: Consumir ✅, Donar 🎁, Desechar ❌, o Posponer ⏰
+6. Si saltas, el producto queda sin resolver (vuelve a aparecer en la lista)
+7. Al terminar, ves resumen: cuántos resolviste, valor ahorrado
+
+**¿Qué pasa si...?**
+
+| Si... | Entonces... |
+|:---|---|
+| Pospones 1 día | El producto se oculta hasta mañana a la misma hora |
+| Pospones 7 días | Desaparece una semana, aunque su fecha real sea hoy |
+| Llega la fecha de snooze | El producto vuelve a aparecer según su urgencia real |
+| Cancelas el Repaso Rápido | Los productos pendientes no se modifican |
+| Resuelves todos los productos | Aparece pantalla de finalización con resumen y estadísticas |
+
+---
+
+## 🎨 Identidad Visual — Temas y Colores
+
+Despensa al Día tiene **3 temas completos**: Claro, Oscuro y Premium (Astral), todos con Material 3.
+
+### Tema Claro — "Jardín"
+
+| Rol | Código | Descripción |
+|:---|---:|:---|
+| Fondo | `#F7F5EE` | Marfil cálido |
+| Superficie | `#F5F0E0` | Paneles |
+| Verde acción | `#2E7D5B` (EmeraldDark) | Botones, disponible |
+| Verde suave | `#DDF1DF` | Contenedores de acciones |
+| Ámbar atención | `#F6C76D` (Amber) | Próximo a vencer |
+| Coral urgencia | `#F1846B` (Coral) | Vencido, hoy |
+| Lavanda donación | `#B8A4E8` (Sky) | Donación, acción positiva |
+| Texto primario | `#1A241E` | Títulos, cuerpo |
+| Texto secundario | `#6B7280` (TextSecondary) | Subtítulos |
+
+### Tema Oscuro — "Bosque"
+
+| Rol | Código | Descripción |
+|:---|---:|:---|
+| Fondo base | `#101814` | Verde bosque profundo |
+| Superficie | `#18231D` | Paneles y secciones |
+| Tarjeta | `#203027` (DarkSurfaceVariant) | Componentes elevados |
+| Verde claro | `#62C99A` (Emerald) | Acciones, estado fresco |
+| Verde brillante | `#8ED6A2` (EmeraldLight) | Iconos, badges |
+| Ámbar | `#F6C76D` (Amber) | Atención próxima |
+| Coral | `#F1846B` (Coral) | Urgencia, vencido |
+| Lavanda | `#B8A4E8` (Sky) | Donación |
+| Texto claro | `#F2F5EF` (TextOnDark) | Texto principal |
+| Texto secundario | `#9CA3AF` (TextOnDarkSecondary) | Subtítulos |
+
+### Tema Premium (Astral) — "Noche Estrellada"
+
+| Rol | Código | Descripción |
+|:---|---:|:---|
+| Fondo base | `#080A18` | Azul medianoche |
+| Superficie | `#0C0F24` | Paneles |
+| Tarjeta | `#141A33` | Componentes elevados |
+| Acento | `#D4AF37` | Dorado metálico |
+| Atención | `#E27D60` | Terracota |
+| Texto | `#E8E6F0` | Blanco suave |
+
+### Urgencia por colores
+
+| Bucket | Tema Claro | Tema Oscuro |
+|:---|---:|:---:|
+| `EXPIRED` | Coral `#F1846B` | Coral `#F1846B` |
+| `TODAY` | Coral `#F1846B` | Coral `#F1846B` |
+| `TOMORROW` | Ámbar `#F6C76D` | Ámbar `#F6C76D` |
+| `THIS_WEEK` | Ámbar `#F6C76D` | Ámbar `#F6C76D` |
+| `NONE` | Verde `#2E7D5B` | Verde `#62C99A` |
+
+### UrgencyBucket enum
+
+```kotlin
+enum class UrgencyBucket {
+    EXPIRED,     // 🔴 Fecha ya pasó
+    TODAY,       // 🔴 Vence hoy
+    TOMORROW,    // 🟡 Vence mañana
+    THIS_WEEK,   // 🟡 Vence en los próximos 7 días
+    NONE         // 🟢 Sin urgencia
+}
+```
 
 ### Principios visuales
 
@@ -874,35 +1007,6 @@ El diseño de Despensa al Día sigue el tema **Jardín de Frescura**: una identi
 - **Microinteracciones funcionales:** animaciones sutiles en tarjetas, hero card con contador animado y fondos con degradado ambiental.
 - **Jerarquía clara:** el nombre del producto y su urgencia son lo principal; ubicación, cantidad y precio son secundarios.
 - **Iconografía consistente:** Material Symbols redondeados para acciones, ubicaciones y categorías.
-
-### Paleta de color
-
-```
-  🟢 Emerald  #62C99A  —  Disponible, saludable, consumible
-  🟡 Amber    #F6C76D  —  Atención, próxima caducidad
-  🔴 Coral    #F1846B  —  Urgencia, vencido
-  🟣 Sky      #B8A4E8  —  Donación, acción positiva
-```
-
-**Modo oscuro:**
-```
-  ██████ Fondo:       #101814  — Verde bosque profundo
-  ██████ Superficie:  #18231D  — Paneles y secciones
-  ██████ Tarjeta:     #203027  — Componentes elevados
-```
-
-**Modo claro:**
-```
-  ██████ Fondo:   #F7F5EE  — Marfil cálido
-  █████️ Verde:   #2E7D5B  — Acción principal
-```
-
-**Tema Premium (Astral):**
-```
-  ██████ Fondo:       #161019  — Berenjena oscura
-  ██████ Acción:      #D4AF37  — Oro metálico
-  ██████ Atención:    #E27D60  — Terracota
-```
 
 ---
 
@@ -1036,7 +1140,8 @@ app/src/main/java/com/example/
 ├── utils/
 │   ├── BackupHelper.kt              # Exportación JSON/CSV
 │   ├── ExpiryPredictor.kt           # 🆕 Predicción de caducidad por categoría
-│   └── MealPlannerHelper.kt         # 🆕 Almacenamiento y matching del plan
+│   ├── MealPlannerHelper.kt         # 🆕 Almacenamiento y matching del plan
+│   └── UrgencyUtils.kt              # 🆕 UrgencyBucket, getUrgentProducts, isCurrentlySnoozed
 └── widget/
     └── PantryWidgetProvider.kt      # Widget hogar (3 urgentes)
 

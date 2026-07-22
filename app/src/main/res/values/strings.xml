@@ -209,6 +209,7 @@
     <string name="quick_review_value_saved">Value taken care of</string>
     <string name="quick_review_skipped">%1$d products left for later</string>
     <string name="quick_review_close">Close</string>
+    <string name="snooze_clear">Show again</string>
 
     <!-- Frequent Products -->
     <string name="frequent_products">Frequent products</string>

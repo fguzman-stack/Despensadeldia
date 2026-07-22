@@ -96,6 +96,9 @@ interface PantryDao {
     @Query("DELETE FROM products WHERE id = :id")
     suspend fun deleteProductById(id: Int)
 
+    @Query("UPDATE products SET snoozeUntil = :snoozeUntil WHERE id = :productId")
+    suspend fun updateSnoozedUntil(productId: Int, snoozeUntil: Long?)
+
     @Query("DELETE FROM products")
     suspend fun deleteAllProducts()
     

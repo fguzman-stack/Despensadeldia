@@ -195,6 +195,7 @@
     <string name="quick_review_value_saved">Valor aprovechado</string>
     <string name="quick_review_skipped">%1$d productos quedan pendientes</string>
     <string name="quick_review_close">Cerrar</string>
+    <string name="snooze_clear">Volver a mostrar</string>
 
     <!-- Frequent Products -->
     <string name="frequent_products">Productos frecuentes</string>

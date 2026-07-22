@@ -31,6 +31,8 @@ import com.example.ui.theme.Emerald
 import com.example.ui.theme.Amber
 import com.example.ui.viewmodel.PantryViewModel
 import kotlinx.coroutines.launch
+import java.text.Normalizer
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -262,8 +264,11 @@ fun ShoppingListSheet(
     }
 }
 
-private fun normalizeName(name: String): String =
-    name.trim().uppercase().replace(Regex("\\s+"), " ")
+private fun normalizeName(name: String): String {
+    val normalized = Normalizer.normalize(name.trim(), Normalizer.Form.NFD)
+    val withoutAccents = normalized.replace(Regex("[\\p{InCombiningDiacriticalMarks}]"), "")
+    return withoutAccents.uppercase(Locale.ROOT).replace(Regex("\\s+"), " ")
+}
 
 private fun findMatch(
     shoppingName: String,

@@ -31,6 +31,8 @@ import com.example.ui.theme.Coral
 import com.example.ui.theme.Sky
 import com.example.ui.theme.Amber
 import com.example.ui.viewmodel.PantryViewModel
+import com.example.utils.UrgencyBucket
+import com.example.utils.UrgentProduct
 import java.util.*
 
 private sealed interface QuickReviewResult {
@@ -47,7 +49,7 @@ private sealed interface QuickReviewResult {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReviewQuickSheet(
-    urgentProducts: List<Product>,
+    urgentProducts: List<UrgentProduct>,
     currencySymbol: String,
     viewModel: PantryViewModel,
     onDismiss: () -> Unit
@@ -57,12 +59,9 @@ fun ReviewQuickSheet(
     var currentIndex by remember { mutableIntStateOf(0) }
     val results = remember { mutableListOf<QuickReviewResult>() }
     var showSummary by remember { mutableStateOf(false) }
+    var showSnoozeDialog by remember { mutableStateOf(false) }
 
     val totalProducts = urgentProducts.size
-
-    val snackbarMsgConsumed = stringResource(R.string.snackbar_consumed)
-    val snackbarMsgDonated = stringResource(R.string.snackbar_donated)
-    val snackbarMsgWasted = stringResource(R.string.snackbar_wasted)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -107,9 +106,11 @@ fun ReviewQuickSheet(
                         onClose = onDismiss
                     )
                 } else if (totalProducts > 0 && currentIndex < totalProducts) {
-                    val product = urgentProducts[currentIndex]
+                    val urgentProduct = urgentProducts[currentIndex]
+                    val product = urgentProduct.product
                     QuickProductCard(
                         product = product,
+                        bucket = urgentProduct.bucket,
                         currencySymbol = currencySymbol,
                         onConsumed = {
                             viewModel.markAsConsumed(product)
@@ -126,6 +127,9 @@ fun ReviewQuickSheet(
                             results.add(QuickReviewResult.WASTED(product.totalPrice))
                             advanceOrSummary(totalProducts, currentIndex, showSummary = { showSummary = true }, nextIndex = { currentIndex++ })
                         },
+                        onSnooze = {
+                            showSnoozeDialog = true
+                        },
                         onSkip = {
                             results.add(QuickReviewResult.SKIPPED)
                             advanceOrSummary(totalProducts, currentIndex, showSummary = { showSummary = true }, nextIndex = { currentIndex++ })
@@ -134,6 +138,19 @@ fun ReviewQuickSheet(
                 }
             }
         }
+    }
+
+    if (showSnoozeDialog && currentIndex < urgentProducts.size) {
+        val product = urgentProducts[currentIndex].product
+        SnoozeDialog(
+            productName = product.name,
+            onSnooze = { days ->
+                viewModel.snoozeProduct(product, days)
+                showSnoozeDialog = false
+                advanceOrSummary(totalProducts, currentIndex, showSummary = { showSummary = true }, nextIndex = { currentIndex++ })
+            },
+            onDismiss = { showSnoozeDialog = false }
+        )
     }
 }
 
@@ -148,28 +165,25 @@ private fun advanceOrSummary(total: Int, current: Int, showSummary: () -> Unit, 
 @Composable
 private fun QuickProductCard(
     product: Product,
+    bucket: UrgencyBucket,
     currencySymbol: String,
     onConsumed: () -> Unit,
     onDonated: () -> Unit,
     onWasted: () -> Unit,
+    onSnooze: () -> Unit,
     onSkip: () -> Unit
 ) {
-    val now = System.currentTimeMillis()
-    val oneDayMs = 24L * 60 * 60 * 1000
-    val isExpired = product.expirationDate != null && product.expirationDate < now
-    val isToday = product.expirationDate != null && product.expirationDate in now until (now + oneDayMs)
-    val isTomorrow = product.expirationDate != null && product.expirationDate in (now + oneDayMs) until (now + 2 * oneDayMs)
-
-    val urgencyColor = when {
-        isExpired || isToday -> Coral
-        isTomorrow -> Amber
+    val urgencyColor = when (bucket) {
+        UrgencyBucket.EXPIRED, UrgencyBucket.TODAY -> Coral
+        UrgencyBucket.TOMORROW, UrgencyBucket.THIS_WEEK -> Amber
         else -> Amber
     }
-    val urgencyLabel = when {
-        isExpired -> stringResource(R.string.expired)
-        isToday -> stringResource(R.string.today)
-        isTomorrow -> stringResource(R.string.tomorrow)
-        else -> stringResource(R.string.expires_soon)
+    val urgencyLabel = when (bucket) {
+        UrgencyBucket.EXPIRED -> stringResource(R.string.expired)
+        UrgencyBucket.TODAY -> stringResource(R.string.today)
+        UrgencyBucket.TOMORROW -> stringResource(R.string.tomorrow)
+        UrgencyBucket.THIS_WEEK -> stringResource(R.string.expires_soon)
+        else -> ""
     }
 
     Column(
@@ -303,11 +317,11 @@ private fun QuickProductCard(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 QuickActionButton(
-                    text = stringResource(R.string.option_wasted),
-                    icon = Icons.Filled.Delete,
-                    color = Coral,
+                    text = stringResource(R.string.action_snooze),
+                    icon = Icons.Filled.Snooze,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f),
-                    onClick = onWasted
+                    onClick = onSnooze
                 )
                 QuickActionButton(
                     text = stringResource(R.string.quick_review_skip),

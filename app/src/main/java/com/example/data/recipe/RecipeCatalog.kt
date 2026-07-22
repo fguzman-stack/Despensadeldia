@@ -181,9 +181,11 @@ object RecipeCatalog {
 
     fun findRecipesByIngredients(
         availableIngredients: Set<String>,
+        urgentIngredients: Set<String> = emptySet(),
         minMatch: Int = 1
     ): List<RecipeMatch> {
         val normalizedAvailable = availableIngredients.map { it.lowercase().trim() }.toSet()
+        val normalizedUrgent = urgentIngredients.map { it.lowercase().trim() }.toSet()
         return recipes.mapNotNull { recipe ->
             val normalizedRecipe = recipe.ingredients.map { it.lowercase().trim() }
             val matched = normalizedRecipe.filter { it in normalizedAvailable }
@@ -191,6 +193,7 @@ object RecipeCatalog {
             val matchCount = matched.size
             val totalCount = normalizedRecipe.size
             val matchRatio = if (totalCount > 0) matchCount.toFloat() / totalCount else 0f
+            val urgentMatchCount = matched.count { it in normalizedUrgent }
             if (matchCount >= minMatch) {
                 RecipeMatch(
                     recipe = recipe,
@@ -198,10 +201,15 @@ object RecipeCatalog {
                     missingIngredients = missing,
                     matchCount = matchCount,
                     totalCount = totalCount,
-                    matchRatio = matchRatio
+                    matchRatio = matchRatio,
+                    urgentMatchCount = urgentMatchCount
                 )
             } else null
-        }.sortedByDescending { it.matchRatio }
+        }.sortedWith(
+            compareByDescending<RecipeMatch> { it.urgentMatchCount }
+                .thenByDescending { it.matchRatio }
+                .thenByDescending { it.matchCount }
+        )
     }
 
     data class RecipeMatch(
@@ -210,6 +218,7 @@ object RecipeCatalog {
         val missingIngredients: List<String>,
         val matchCount: Int,
         val totalCount: Int,
-        val matchRatio: Float
+        val matchRatio: Float,
+        val urgentMatchCount: Int = 0
     )
 }

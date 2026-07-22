@@ -193,6 +193,7 @@
     <string name="quick_review_value_saved">Valor aproveitado</string>
     <string name="quick_review_skipped">%1$d produtos pendentes</string>
     <string name="quick_review_close">Fechar</string>
+    <string name="snooze_clear">Mostrar novamente</string>
 
     <!-- Frequent Products -->
     <string name="frequent_products">Produtos frequentes</string>

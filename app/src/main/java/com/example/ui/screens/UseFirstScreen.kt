@@ -57,6 +57,9 @@ import com.example.ui.theme.Sky
 import com.example.ui.theme.TextOnDarkSecondary
 import com.example.ui.theme.TextSecondary
 import com.example.ui.viewmodel.PantryViewModel
+import com.example.utils.UrgencyBucket
+import com.example.utils.UrgentProduct
+import com.example.utils.getUrgentProducts
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -73,24 +76,15 @@ fun UseFirstScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     val now = System.currentTimeMillis()
-    val oneDayMs = 24L * 60 * 60 * 1000
-    val todayEnd = now + oneDayMs
-    val tomorrowEnd = now + 2 * oneDayMs
-    val weekEnd = now + 7 * oneDayMs
 
-    val urgentProducts = activeProducts.filter { product ->
-        product.expirationDate != null &&
-        product.expiryType != ExpiryType.NONE &&
-        (product.snoozeUntil == null || product.snoozeUntil <= now)
-    }.sortedBy { it.expirationDate }
+    val urgentProducts = activeProducts.getUrgentProducts(now)
 
-    val expired = urgentProducts.filter { it.expirationDate!! < now }
-    val expiringToday = urgentProducts.filter { it.expirationDate!! in now until todayEnd }
-    val expiringTomorrow = urgentProducts.filter { it.expirationDate!! in todayEnd until tomorrowEnd }
-    val expiringThisWeek = urgentProducts.filter { it.expirationDate!! in tomorrowEnd until weekEnd }
+    val expired = urgentProducts.filter { it.bucket == UrgencyBucket.EXPIRED }
+    val expiringToday = urgentProducts.filter { it.bucket == UrgencyBucket.TODAY }
+    val expiringTomorrow = urgentProducts.filter { it.bucket == UrgencyBucket.TOMORROW }
+    val expiringThisWeek = urgentProducts.filter { it.bucket == UrgencyBucket.THIS_WEEK }
 
-    val hasUrgentItems = expired.isNotEmpty() || expiringToday.isNotEmpty() ||
-            expiringTomorrow.isNotEmpty() || expiringThisWeek.isNotEmpty()
+    val hasUrgentItems = urgentProducts.isNotEmpty()
 
     var productToResolve by remember { mutableStateOf<Product?>(null) }
     var productToSnooze by remember { mutableStateOf<Product?>(null) }
@@ -101,8 +95,8 @@ fun UseFirstScreen(
 
     val currencySymbol = settings.currencySymbol.ifEmpty { "$" }
 
-    val totalUrgent = expired.size + expiringToday.size + expiringTomorrow.size + expiringThisWeek.size
-    val totalValueAtRisk = urgentProducts.sumOf { it.totalPrice }
+    val totalUrgent = urgentProducts.size
+    val totalValueAtRisk = urgentProducts.sumOf { it.product.totalPrice }
 
     val view = LocalView.current
 
@@ -193,15 +187,15 @@ fun UseFirstScreen(
                                 count = expired.size
                             )
                         }
-                        items(expired, key = { it.id }) { product ->
+                        items(expired, key = { it.product.id }) { urgentProduct ->
                             ProductCard(
-                                product = product,
+                                product = urgentProduct.product,
                                 urgencyColor = Coral,
                                 urgencyLabel = stringResource(R.string.expired),
                                 currencySymbol = currencySymbol,
                                 showExpiryTypeHint = false,
-                                onResolve = { productToResolve = product },
-                                onSnooze = { productToSnooze = product }
+                                onResolve = { productToResolve = urgentProduct.product },
+                                onSnooze = { productToSnooze = urgentProduct.product }
                             )
                         }
                     }
@@ -214,15 +208,15 @@ fun UseFirstScreen(
                                 count = expiringToday.size
                             )
                         }
-                        items(expiringToday, key = { it.id }) { product ->
+                        items(expiringToday, key = { it.product.id }) { urgentProduct ->
                             ProductCard(
-                                product = product,
+                                product = urgentProduct.product,
                                 urgencyColor = Coral,
                                 urgencyLabel = stringResource(R.string.today),
                                 currencySymbol = currencySymbol,
-                                showExpiryTypeHint = product.expiryType == ExpiryType.BEST_BEFORE,
-                                onResolve = { productToResolve = product },
-                                onSnooze = { productToSnooze = product }
+                                showExpiryTypeHint = urgentProduct.product.expiryType == ExpiryType.BEST_BEFORE,
+                                onResolve = { productToResolve = urgentProduct.product },
+                                onSnooze = { productToSnooze = urgentProduct.product }
                             )
                         }
                     }
@@ -235,15 +229,15 @@ fun UseFirstScreen(
                                 count = expiringTomorrow.size
                             )
                         }
-                        items(expiringTomorrow, key = { it.id }) { product ->
+                        items(expiringTomorrow, key = { it.product.id }) { urgentProduct ->
                             ProductCard(
-                                product = product,
+                                product = urgentProduct.product,
                                 urgencyColor = Amber,
                                 urgencyLabel = stringResource(R.string.tomorrow),
                                 currencySymbol = currencySymbol,
-                                showExpiryTypeHint = product.expiryType == ExpiryType.BEST_BEFORE,
-                                onResolve = { productToResolve = product },
-                                onSnooze = { productToSnooze = product }
+                                showExpiryTypeHint = urgentProduct.product.expiryType == ExpiryType.BEST_BEFORE,
+                                onResolve = { productToResolve = urgentProduct.product },
+                                onSnooze = { productToSnooze = urgentProduct.product }
                             )
                         }
                     }
@@ -256,21 +250,21 @@ fun UseFirstScreen(
                                 count = expiringThisWeek.size
                             )
                         }
-                        items(expiringThisWeek, key = { it.id }) { product ->
-                            val daysLeft = ((product.expirationDate!! - now) / oneDayMs).toInt()
+                        items(expiringThisWeek, key = { it.product.id }) { urgentProduct ->
+                            val daysLeft = ((urgentProduct.product.expirationDate!! - now) / (24L * 60 * 60 * 1000)).toInt()
                             val label = when {
-                                product.expiryType == ExpiryType.ESTIMATED -> "~$daysLeft ${stringResource(R.string.days)}"
-                                product.expiryType == ExpiryType.BEST_BEFORE -> "$daysLeft ${stringResource(R.string.days)}"
+                                urgentProduct.product.expiryType == ExpiryType.ESTIMATED -> "~$daysLeft ${stringResource(R.string.days)}"
+                                urgentProduct.product.expiryType == ExpiryType.BEST_BEFORE -> "$daysLeft ${stringResource(R.string.days)}"
                                 else -> "$daysLeft ${stringResource(R.string.days)}"
                             }
                             ProductCard(
-                                product = product,
+                                product = urgentProduct.product,
                                 urgencyColor = Amber,
                                 urgencyLabel = label,
                                 currencySymbol = currencySymbol,
-                                showExpiryTypeHint = product.expiryType != ExpiryType.FIXED,
-                                onResolve = { productToResolve = product },
-                                onSnooze = { productToSnooze = product }
+                                showExpiryTypeHint = urgentProduct.product.expiryType != ExpiryType.FIXED,
+                                onResolve = { productToResolve = urgentProduct.product },
+                                onSnooze = { productToSnooze = urgentProduct.product }
                             )
                         }
                     }
@@ -326,7 +320,7 @@ fun UseFirstScreen(
 
     if (showQuickReview) {
         ReviewQuickSheet(
-            urgentProducts = expired + expiringToday + expiringTomorrow + expiringThisWeek,
+            urgentProducts = urgentProducts,
             currencySymbol = currencySymbol,
             viewModel = viewModel,
             onDismiss = { showQuickReview = false }
@@ -338,8 +332,7 @@ fun UseFirstScreen(
         SnoozeDialog(
             productName = product.name,
             onSnooze = { daysToSnooze ->
-                val snoozeUntil = System.currentTimeMillis() + (daysToSnooze * 24L * 60 * 60 * 1000)
-                viewModel.snoozeProduct(product, snoozeUntil)
+                viewModel.snoozeProduct(product, daysToSnooze)
                 productToSnooze = null
                 val snoozeMessage = snoozeTemplate.format(product.name, daysToSnooze)
                 scope.launch {

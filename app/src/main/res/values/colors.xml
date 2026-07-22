@@ -13,4 +13,11 @@
     <color name="native_ad_text_primary">#FF1B5E20</color>
     <color name="native_ad_text_secondary">#FF4A5568</color>
     <color name="native_ad_border">#336B8E23</color>
+
+    <!-- Urgency colors -->
+    <color name="urgency_expired">#FFD32F2F</color>
+    <color name="urgency_today">#FFD32F2F</color>
+    <color name="urgency_tomorrow">#FFF57C00</color>
+    <color name="urgency_this_week">#FFF57C00</color>
+    <color name="urgency_none">#FF43A047</color>
 </resources>

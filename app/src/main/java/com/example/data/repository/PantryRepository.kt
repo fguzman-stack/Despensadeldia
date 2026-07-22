@@ -77,6 +77,10 @@ class PantryRepository(private val pantryDao: PantryDao) {
         return pantryDao.getProductById(id)
     }
 
+    suspend fun snoozeProduct(productId: Int, snoozeUntil: Long?) {
+        pantryDao.updateSnoozedUntil(productId, snoozeUntil)
+    }
+
     suspend fun getAllProductsDirect(): List<Product> =
         pantryDao.getAllProductsDirect()
 
