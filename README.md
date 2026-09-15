@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/logo/app-icon.webp" width="112" height="112" alt="Despensa al Día">
+  <img src="docs/logo/app-icon.jpg" width="112" height="112" alt="Despensa al Día">
   <h1>Despensa al Día</h1>
   <p><strong>Tu despensa, ordenada por urgencia.</strong></p>
   <p>Android offline-first para reducir desperdicio, ahorrar dinero y decidir qué usar primero.</p>
