@@ -8,7 +8,7 @@ Mejoras visuales y correcciones del lanzamiento abierto.
 - Encabezado de `Mi Inventario` rediseñado: título completo, iconos de acceso rápido sin recortes y mejor jerarquía.
 - Contraste corregido en la hero card de `Usa Primero` entre temas claro y Pop.
 - Capturas del README ahora en PNG (render garantizado en GitHub) con fuentes SVG incluidos.
-- Logo del README actualizado al ícono real de la app (`docs/logo/app-icon.webp`).
+- Logo del README actualizado al ícono real de la app (`docs/logo/app-icon.jpg`).
 
 ## 1.0.0
 
