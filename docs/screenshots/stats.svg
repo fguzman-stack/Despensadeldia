@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 760" width="360" height="760" font-family="Roboto, Helvetica, Arial, sans-serif" role="img" aria-label="Pantalla Estadísticas">
+  <rect width="360" height="760" rx="34" fill="#FFF8EC"/>
+  <text x="24" y="34" font-size="13" fill="#201A12">11:25</text>
+  <circle cx="300" cy="28" r="4" fill="#4FA779"/>
+  <circle cx="316" cy="28" r="4" fill="#E9A93B"/>
+  <circle cx="332" cy="28" r="4" fill="#E76F51"/>
+
+  <text x="24" y="88" font-size="24" font-weight="900" fill="#201A12">Tu actividad en Septiembre</text>
+
+  <g>
+    <rect x="24" y="110" width="312" height="66" rx="20" fill="#FFFDF6" stroke="#EADFCB"/>
+    <circle cx="58" cy="143" r="18" fill="#DDF0DF"/>
+    <path d="M50 143l6 6l12-12" fill="none" stroke="#1F6B49" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="92" y="138" font-size="15" font-weight="700" fill="#1F6B49">Esta semana</text>
+    <text x="92" y="158" font-size="12" fill="#6A5A45">Aprovechaste 8 · valor ahorrado $15</text>
+  </g>
+
+  <g>
+    <rect x="24" y="190" width="150" height="100" rx="22" fill="#DDF0DF"/>
+    <circle cx="52" cy="222" r="13" fill="#FFFFFF"/>
+    <path d="M46 222l4 4l8-8" fill="none" stroke="#1F6B49" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="46" y="262" font-size="30" font-weight="900" fill="#123E28">12</text>
+    <text x="46" y="280" font-size="12" fill="#1F6B49">Consumidos</text>
+
+    <rect x="186" y="190" width="150" height="100" rx="22" fill="#FFD9CE"/>
+    <circle cx="214" cy="222" r="13" fill="#FFFFFF"/>
+    <path d="M208 218h12l-2 10h-8z" fill="#B94E37"/>
+    <text x="208" y="262" font-size="30" font-weight="900" fill="#7A2A1A">3</text>
+    <text x="208" y="280" font-size="12" fill="#B94E37">Desperdiciados</text>
+
+    <rect x="24" y="302" width="150" height="100" rx="22" fill="#E4E0FF"/>
+    <circle cx="52" cy="334" r="13" fill="#FFFFFF"/>
+    <path d="M52 328c4 0 6 3 6 3s-2 3-6 3s-6-3-6-3s2-3 6-3z" fill="#7E78D2"/>
+    <text x="46" y="374" font-size="30" font-weight="900" fill="#3D2E6E">1</text>
+    <text x="46" y="392" font-size="12" fill="#7E78D2">Donados</text>
+
+    <rect x="186" y="302" width="150" height="100" rx="22" fill="#DDF0DF"/>
+    <circle cx="214" cy="334" r="13" fill="#FFFFFF"/>
+    <path d="M214 328l6 2v4c0 3-3 5-6 6c-3-1-6-3-6-6v-4z" fill="#1F6B49"/>
+    <text x="208" y="374" font-size="30" font-weight="900" fill="#123E28">8</text>
+    <text x="208" y="392" font-size="12" fill="#1F6B49">Rescatados</text>
+  </g>
+
+  <g>
+    <rect x="24" y="424" width="312" height="140" rx="24" fill="#FFFDF6" stroke="#EADFCB"/>
+    <text x="48" y="456" font-size="15" font-weight="800" fill="#201A12">Tasa de consumo</text>
+    <circle cx="120" cy="520" r="42" fill="none" stroke="#FFD9CE" stroke-width="16"/>
+    <path d="M120 478a42 42 0 0 1 35 64" fill="none" stroke="#1F6B49" stroke-width="16" stroke-linecap="round"/>
+    <text x="120" y="528" font-size="24" font-weight="900" fill="#1F6B49" text-anchor="middle">80%</text>
+    <text x="184" y="500" font-size="11" fill="#6A5A45">aprovechado</text>
+    <circle cx="186" cy="516" r="4" fill="#1F6B49"/>
+    <text x="196" y="520" font-size="12" fill="#201A12">Consumidos 12</text>
+    <circle cx="186" cy="538" r="4" fill="#E76F51"/>
+    <text x="196" y="542" font-size="12" fill="#201A12">Desperdiciados 3</text>
+  </g>
+
+  <text x="24" y="596" font-size="17" font-weight="800" fill="#201A12">Salud del inventario</text>
+  <g>
+    <rect x="24" y="606" width="312" height="76" rx="22" fill="#FFFDF6" stroke="#EADFCB"/>
+    <text x="44" y="628" font-size="12" fill="#201A12">Frescos</text>
+    <rect x="130" y="620" width="170" height="8" rx="4" fill="#EADFCB"/>
+    <rect x="130" y="620" width="130" height="8" rx="4" fill="#4FA779"/>
+    <text x="310" y="628" font-size="12" font-weight="700" fill="#1F6B49" text-anchor="end">15</text>
+    <text x="44" y="650" font-size="12" fill="#201A12">Prox. vencer</text>
+    <rect x="130" y="642" width="170" height="8" rx="4" fill="#EADFCB"/>
+    <rect x="130" y="642" width="60" height="8" rx="4" fill="#E9A93B"/>
+    <text x="310" y="650" font-size="12" font-weight="700" fill="#946012" text-anchor="end">3</text>
+    <text x="44" y="672" font-size="12" fill="#201A12">Vencidos</text>
+    <rect x="130" y="664" width="170" height="8" rx="4" fill="#EADFCB"/>
+    <rect x="130" y="664" width="16" height="8" rx="4" fill="#E76F51"/>
+    <text x="310" y="672" font-size="12" font-weight="700" fill="#B94E37" text-anchor="end">1</text>
+  </g>
+
+  <g>
+    <rect x="0" y="690" width="360" height="70" fill="#FFFDF6"/>
+    <line x1="0" y1="690" x2="360" y2="690" stroke="#EADFCB"/>
+    <circle cx="60" cy="715" r="7" fill="none" stroke="#6A5A45" stroke-width="2.2"/>
+    <path d="M60 708v-2" stroke="#6A5A45" stroke-width="2.2"/>
+    <rect x="145" y="707" width="16" height="16" rx="3" fill="none" stroke="#6A5A45" stroke-width="2"/>
+    <g stroke="#1F6B49" stroke-width="3">
+      <line x1="238" y1="722" x2="238" y2="712"/>
+      <line x1="246" y1="722" x2="246" y2="706"/>
+      <line x1="254" y1="722" x2="254" y2="716"/>
+    </g>
+    <circle cx="246" cy="713" r="14" fill="#DDF0DF"/>
+    <g fill="none" stroke="#6A5A45" stroke-width="2.2">
+      <circle cx="322" cy="715" r="7"/>
+      <path d="M322 706v-2M322 726v-2M331 715h2M311 715h-2"/>
+    </g>
+    <text x="60" y="742" font-size="9" fill="#6A5A45" text-anchor="middle">Usa Primero</text>
+    <text x="153" y="742" font-size="9" fill="#6A5A45" text-anchor="middle">Inventario</text>
+    <text x="246" y="742" font-size="9" font-weight="700" fill="#1F6B49" text-anchor="middle">Estadisticas</text>
+    <text x="322" y="742" font-size="9" fill="#6A5A45" text-anchor="middle">Ajustes</text>
+  </g>
+</svg>

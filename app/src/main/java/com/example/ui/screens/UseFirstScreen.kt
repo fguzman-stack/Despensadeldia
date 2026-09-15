@@ -358,13 +358,13 @@ fun UseFirstScreen(
 @Composable
 fun AmbientGradientBackground() {
     val bg = MaterialTheme.colorScheme.background
-    val isFruitPop = bg == Color(0xFF17120F)
+    val isFruitPop = bg == Color(0xFFFFF3D8)
     val isDark = bg == Color(0xFF121712) || isFruitPop
     val colors = if (isFruitPop) {
         listOf(
-            Color(0xFF17120F),
-            Color(0xFF2C1D16),
-            Color(0xFF191410)
+            Color(0xFFFFF3D8),
+            Color(0xFFFFDFF0),
+            Color(0xFFDDF5FF)
         )
     } else if (isDark) {
         listOf(
@@ -399,10 +399,10 @@ fun UrgencyHeroCard(
     todayCount: Int
 ) {
     val bg = MaterialTheme.colorScheme.background
-    val isFruitPop = bg == Color(0xFF17120F)
-    val isDark = bg == Color(0xFF121712) || isFruitPop
-    val gradientStart = if (isFruitPop) Color(0xFF3A241A) else if (isDark) Color(0xFF203421) else Color(0xFFFFE7B8)
-    val gradientEnd = if (isFruitPop) Color(0xFF211813) else if (isDark) Color(0xFF1C251D) else Color(0xFFE3F2D7)
+    val isFruitPop = bg == Color(0xFFFFF3D8)
+    val isDark = bg == Color(0xFF121712)
+    val gradientStart = if (isFruitPop) Color(0xFFFFC2D8) else if (isDark) Color(0xFF203421) else Color(0xFFFFE7B8)
+    val gradientEnd = if (isFruitPop) Color(0xFFC8F7DC) else if (isDark) Color(0xFF1C251D) else Color(0xFFE3F2D7)
 
     val animatedCount by animateIntAsState(
         targetValue = totalUrgent,
@@ -446,7 +446,7 @@ fun UrgencyHeroCard(
                             text = "$animatedCount",
                             style = MaterialTheme.typography.displayLarge,
                             fontWeight = FontWeight.ExtraBold,
-                            color = if (isDark) EmeraldLight else EmeraldDark
+                            color = if (isFruitPop) Color(0xFFFF5D8F) else if (isDark) EmeraldLight else EmeraldDark
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
@@ -497,7 +497,7 @@ fun UrgencyStat(value: String, label: String, color: Color) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = TextOnDarkSecondary
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

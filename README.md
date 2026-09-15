@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" width="112" height="112" alt="Despensa al Día">
+  <img src="docs/logo/despensa-logo.svg" width="112" height="112" alt="Despensa al Día">
   <h1>Despensa al Día</h1>
   <p><strong>Tu despensa, ordenada por urgencia.</strong></p>
   <p>Android offline-first para reducir desperdicio, ahorrar dinero y decidir qué usar primero.</p>
@@ -22,12 +22,16 @@ El inventario funciona sin cuenta, sin servidor propio y sin conexión. Algunas 
 
 ## Capturas
 
+Los mockups son SVG vectoriales (no se corrompen en Git/GitHub):
+
 <p align="center">
-  <img src="docs/screenshots/use-first.png" width="190" alt="Usa Primero">
-  <img src="docs/screenshots/inventory.png" width="190" alt="Inventario">
-  <img src="docs/screenshots/stats.png" width="190" alt="Estadísticas">
-  <img src="docs/screenshots/settings.png" width="190" alt="Ajustes">
+  <img src="docs/screenshots/use-first.svg" width="210" alt="Usa Primero">
+  <img src="docs/screenshots/inventory.svg" width="210" alt="Inventario">
+  <img src="docs/screenshots/stats.svg" width="210" alt="Estadísticas">
+  <img src="docs/screenshots/settings.svg" width="210" alt="Ajustes">
 </p>
+
+El modo `Despensa Pop` (Ajustes > Apariencia) es un tema claro, colorido e infantil con acentos rosa, menta y amarillo.
 
 ## Funciones
 
@@ -41,7 +45,7 @@ El inventario funciona sin cuenta, sin servidor propio y sin conexión. Algunas 
 - Estadísticas de consumo, desperdicio, donaciones, rescates y salud del inventario.
 - Notificaciones locales y widget de pantalla de inicio.
 - Exportación e importación de respaldo en JSON, más exportación CSV.
-- Temas claro, oscuro y “Frutas en Fiesta”.
+- Temas claro, oscuro y “Despensa Pop”, un modo colorido e infantil.
 
 ## Privacidad
 

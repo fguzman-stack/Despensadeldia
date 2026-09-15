@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 760" width="360" height="760" font-family="Roboto, Helvetica, Arial, sans-serif" role="img" aria-label="Pantalla Usa Primero">
+  <rect width="360" height="760" rx="34" fill="#FFF8EC"/>
+  <rect x="0" y="0" width="360" height="60" fill="#FFF8EC"/>
+  <text x="24" y="34" font-size="13" fill="#201A12">11:25</text>
+  <circle cx="300" cy="28" r="4" fill="#4FA779"/>
+  <circle cx="316" cy="28" r="4" fill="#E9A93B"/>
+  <circle cx="332" cy="28" r="4" fill="#E76F51"/>
+
+  <text x="24" y="92" font-size="26" font-weight="800" fill="#201A12">Usa Primero</text>
+  <text x="24" y="116" font-size="14" fill="#6A5A45">Hoy tienes productos por aprovechar</text>
+
+  <g>
+    <rect x="24" y="136" width="312" height="120" rx="28" fill="#DDF0DF"/>
+    <text x="48" y="170" font-size="13" font-weight="600" fill="#1F6B49">PRODUCTOS PARA USAR</text>
+    <text x="46" y="220" font-size="52" font-weight="900" fill="#1F6B49">3</text>
+    <text x="86" y="216" font-size="16" font-weight="700" fill="#6A5A45">hoy</text>
+    <text x="46" y="244" font-size="13" font-weight="700" fill="#E76F51">$18 en riesgo</text>
+    <rect x="236" y="162" width="80" height="38" rx="14" fill="#FFFDF6"/>
+    <text x="276" y="184" font-size="16" font-weight="800" fill="#E76F51" text-anchor="middle">1</text>
+    <text x="276" y="197" font-size="9" fill="#6A5A45" text-anchor="middle">vencidos</text>
+    <rect x="236" y="206" width="80" height="38" rx="14" fill="#FFFDF6"/>
+    <text x="276" y="228" font-size="16" font-weight="800" fill="#E9A93B" text-anchor="middle">2</text>
+    <text x="276" y="241" font-size="9" fill="#6A5A45" text-anchor="middle">vence hoy</text>
+  </g>
+
+  <g>
+    <rect x="24" y="272" width="152" height="46" rx="16" fill="#1F6B49"/>
+    <text x="100" y="300" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">Repaso Rápido</text>
+    <rect x="184" y="272" width="152" height="46" rx="16" fill="#FFFDF6" stroke="#E2D4BE"/>
+    <text x="260" y="300" font-size="13" font-weight="700" fill="#1F6B49" text-anchor="middle">Recetas</text>
+  </g>
+
+  <text x="40" y="352" font-size="15" font-weight="800" fill="#201A12">Vence hoy</text>
+  <circle cx="34" cy="348" r="3" fill="#E76F51"/>
+
+  <g>
+    <rect x="24" y="364" width="312" height="86" rx="22" fill="#FFFDF6"/>
+    <rect x="24" y="364" width="5" height="86" fill="#E76F51"/>
+    <circle cx="62" cy="398" r="16" fill="#FFD9CE"/>
+    <path d="M62 390c6 4 6 12 0 16c-6-4-6-12 0-16z" fill="#E76F51"/>
+    <text x="92" y="394" font-size="15" font-weight="700" fill="#201A12">Leche entera</text>
+    <text x="92" y="414" font-size="12" fill="#6A5A45">1 L · Nevera</text>
+    <rect x="238" y="384" width="80" height="22" rx="10" fill="#FFD9CE"/>
+    <text x="278" y="399" font-size="11" font-weight="700" fill="#B94E37" text-anchor="middle">Hoy</text>
+    <rect x="92" y="424" width="116" height="18" rx="9" fill="#DDF0DF"/>
+    <text x="150" y="437" font-size="10" font-weight="700" fill="#1F6B49" text-anchor="middle">Resolver</text>
+  </g>
+
+  <g>
+    <rect x="24" y="462" width="312" height="86" rx="22" fill="#FFFDF6"/>
+    <rect x="24" y="462" width="5" height="86" fill="#E9A93B"/>
+    <circle cx="62" cy="496" r="16" fill="#FFEDC2"/>
+    <circle cx="62" cy="496" r="8" fill="#E9A93B"/>
+    <text x="92" y="492" font-size="15" font-weight="700" fill="#201A12">Huevos</text>
+    <text x="92" y="512" font-size="12" fill="#6A5A45">12 uds · Nevera</text>
+    <rect x="238" y="482" width="80" height="22" rx="10" fill="#FFEDC2"/>
+    <text x="278" y="497" font-size="11" font-weight="700" fill="#946012" text-anchor="middle">Mañana</text>
+  </g>
+
+  <g>
+    <rect x="24" y="560" width="312" height="86" rx="22" fill="#FFFDF6"/>
+    <rect x="24" y="560" width="5" height="86" fill="#4FA779"/>
+    <circle cx="62" cy="594" r="16" fill="#DDF0DF"/>
+    <path d="M62 586l6 12h-12z" fill="#4FA779"/>
+    <text x="92" y="590" font-size="15" font-weight="700" fill="#201A12">Espinacas</text>
+    <text x="92" y="610" font-size="12" fill="#6A5A45">300 g · Congelador</text>
+    <rect x="238" y="580" width="80" height="22" rx="10" fill="#DDF0DF"/>
+    <text x="278" y="595" font-size="11" font-weight="700" fill="#1F6B49" text-anchor="middle">4 días</text>
+  </g>
+
+  <g>
+    <rect x="0" y="690" width="360" height="70" fill="#FFFDF6"/>
+    <line x1="0" y1="690" x2="360" y2="690" stroke="#EADFCB"/>
+    <g fill="#1F6B49">
+      <circle cx="60" cy="716" r="16" fill="#DDF0DF"/>
+      <rect x="55" y="711" width="10" height="10" rx="2"/>
+    </g>
+    <g>
+      <rect x="145" y="708" width="14" height="16" rx="2" fill="none" stroke="#6A5A45" stroke-width="2"/>
+      <rect x="151" y="708" width="2" height="16" fill="#6A5A45"/>
+    </g>
+    <g stroke="#6A5A45" stroke-width="3">
+      <line x1="238" y1="724" x2="238" y2="712"/>
+      <line x1="246" y1="724" x2="246" y2="706"/>
+      <line x1="254" y1="724" x2="254" y2="716"/>
+    </g>
+    <g fill="none" stroke="#6A5A45" stroke-width="2.4">
+      <circle cx="322" cy="715" r="7"/>
+      <path d="M322 706v-2M322 726v-2M332 715h2M312 715h-2M329 708l1.5-1.5M314 722l1.5-1.5"/>
+    </g>
+    <text x="60" y="742" font-size="9" fill="#1F6B49" text-anchor="middle">Usa Primero</text>
+    <text x="152" y="742" font-size="9" fill="#6A5A45" text-anchor="middle">Inventario</text>
+    <text x="246" y="742" font-size="9" fill="#6A5A45" text-anchor="middle">Estadísticas</text>
+    <text x="322" y="742" font-size="9" fill="#6A5A45" text-anchor="middle">Ajustes</text>
+  </g>
+</svg>

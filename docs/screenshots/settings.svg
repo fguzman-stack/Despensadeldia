@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 760" width="360" height="760" font-family="Roboto, Helvetica, Arial, sans-serif" role="img" aria-label="Pantalla Ajustes con tema Despensa Pop">
+  <rect width="360" height="760" rx="34" fill="#FFF8EC"/>
+  <text x="24" y="34" font-size="13" fill="#201A12">11:25</text>
+  <circle cx="300" cy="28" r="4" fill="#4FA779"/>
+  <circle cx="316" cy="28" r="4" fill="#E9A93B"/>
+  <circle cx="332" cy="28" r="4" fill="#E76F51"/>
+
+  <text x="24" y="86" font-size="26" font-weight="900" fill="#201A12">Ajustes</text>
+
+  <g>
+    <rect x="16" y="104" width="328" height="120" rx="26" fill="#FFFDF6" stroke="#EADFCB"/>
+    <text x="38" y="136" font-size="14" font-weight="800" fill="#1F6B49">Notificaciones Diarias</text>
+    <text x="38" y="164" font-size="14" fill="#201A12">Recordatorios de vencimiento</text>
+    <text x="38" y="182" font-size="11" fill="#6A5A45">Avisar alimentos proximos a vencer</text>
+    <rect x="286" y="150" width="42" height="22" rx="11" fill="#4FA779"/>
+    <circle cx="317" cy="161" r="9" fill="#FFFFFF"/>
+    <rect x="38" y="196" width="284" height="20" rx="10" fill="#FFEDC2"/>
+    <text x="180" y="210" font-size="11" font-weight="700" fill="#946012" text-anchor="middle">Probar Notificacion de Alerta</text>
+  </g>
+
+  <g>
+    <rect x="16" y="240" width="328" height="210" rx="26" fill="#FFFDF6" stroke="#EADFCB"/>
+    <text x="38" y="272" font-size="14" font-weight="800" fill="#1F6B49">Apariencia</text>
+    <text x="38" y="296" font-size="13" fill="#201A12">Tema de la Aplicacion</text>
+    <rect x="36" y="306" width="146" height="54" rx="18" fill="#FFEDC2"/>
+    <text x="60" y="338" font-size="13" fill="#201A12">Sistema</text>
+    <rect x="36" y="368" width="146" height="54" rx="18" fill="#EADFCB"/>
+    <text x="60" y="400" font-size="13" fill="#201A12">Oscuro</text>
+    <rect x="196" y="306" width="146" height="54" rx="18" fill="#EADFCB"/>
+    <text x="220" y="338" font-size="13" fill="#201A12">Claro</text>
+    <rect x="196" y="368" width="146" height="54" rx="18" fill="#FF5D8F"/>
+    <circle cx="216" cy="395" r="9" fill="#FFFFFF"/>
+    <circle cx="213" cy="395" r="2" fill="#FF5D8F"/>
+    <circle cx="219" cy="395" r="2" fill="#FFC857"/>
+    <text x="232" y="392" font-size="13" font-weight="800" fill="#FFFFFF">Despensa</text>
+    <text x="232" y="406" font-size="13" font-weight="800" fill="#FFFFFF">Pop</text>
+  </g>
+
+  <g>
+    <rect x="16" y="466" width="328" height="150" rx="26" fill="#FFFDF6" stroke="#EADFCB"/>
+    <text x="38" y="498" font-size="14" font-weight="800" fill="#1F6B49">Datos y Respaldo</text>
+    <text x="38" y="522" font-size="12" fill="#6A5A45">Exporta tus datos para guardarlos.</text>
+    <rect x="36" y="534" width="146" height="34" rx="14" fill="none" stroke="#1F6B49"/>
+    <text x="109" y="555" font-size="12" font-weight="700" fill="#1F6B49" text-anchor="middle">Exportar JSON</text>
+    <rect x="196" y="534" width="146" height="34" rx="14" fill="none" stroke="#1F6B49"/>
+    <text x="269" y="555" font-size="12" font-weight="700" fill="#1F6B49" text-anchor="middle">Exportar CSV</text>
+    <rect x="36" y="578" width="306" height="28" rx="14" fill="#DDF0DF"/>
+    <text x="189" y="597" font-size="12" font-weight="700" fill="#1F6B49" text-anchor="middle">Importar respaldo JSON</text>
+  </g>
+
+  <g>
+    <rect x="0" y="690" width="360" height="70" fill="#FFFDF6"/>
+    <line x1="0" y1="690" x2="360" y2="690" stroke="#EADFCB"/>
+    <circle cx="60" cy="715" r="7" fill="none" stroke="#6A5A45" stroke-width="2.2"/>
+    <path d="M60 708v-2" stroke="#6A5A45" stroke-width="2.2"/>
+    <rect x="145" y="707" width="16" height="16" rx="3" fill="none" stroke="#6A5A45" stroke-width="2"/>
+    <g stroke="#6A5A45" stroke-width="3">
+      <line x1="238" y1="722" x2="238" y2="712"/>
+      <line x1="246" y1="722" x2="246" y2="706"/>
+      <line x1="254" y1="722" x2="254" y2="716"/>
+    </g>
+    <circle cx="322" cy="715" r="14" fill="#DDF0DF"/>
+    <g fill="none" stroke="#1F6B49" stroke-width="2.2">
+      <circle cx="322" cy="715" r="7"/>
+      <path d="M322 706v-2M322 726v-2M331 715h2M311 715h-2"/>
+    </g>
+    <text x="60" y="742" font-size="9" fill="#6A5A45" text-anchor="middle">Usa Primero</text>
+    <text x="153" y="742" font-size="9" fill="#6A5A45" text-anchor="middle">Inventario</text>
+    <text x="246" y="742" font-size="9" fill="#6A5A45" text-anchor="middle">Estadisticas</text>
+    <text x="322" y="742" font-size="9" font-weight="700" fill="#1F6B49" text-anchor="middle">Ajustes</text>
+  </g>
+</svg>
