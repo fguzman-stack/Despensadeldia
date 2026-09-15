@@ -173,10 +173,18 @@
     <string name="data_description">Export your data to keep or analyze it.</string>
     <string name="export_json">JSON Backup</string>
     <string name="export_csv">CSV Export</string>
+    <string name="import_json">Import JSON backup</string>
+    <string name="import_json_warning">Importing replaces the current inventory. Export a backup first if you want to keep it.</string>
+    <string name="import_confirm_title">Replace inventory?</string>
+    <string name="import_confirm_message">The selected file contains %1$d products. %2$d entries could not be read. Your current inventory will be replaced.</string>
+    <string name="import_replace">Replace inventory</string>
+    <string name="import_success">Imported %1$d products</string>
+    <string name="import_error_title">Import failed</string>
+    <string name="import_error">The selected backup could not be imported.</string>
     <string name="section_about">About Despensa al Día</string>
     <string name="privacy_title">Privacy</string>
-    <string name="privacy_description">All your information is stored only on this device. We do not use cloud servers.</string>
-    <string name="privacy_detail">Despensa al Día was built with privacy in mind.\n\n• Your data (inventory, settings, lists) is stored locally on your device using an internal database (Room).\n• We do not require accounts, emails or passwords.\n• We do not share or send your consumption habits to any external server.\n• If you uninstall the app, your data will be lost unless you use the JSON backup feature.\n\nYour pantry, your rules, your privacy.</string>
+    <string name="privacy_description">Your core inventory is stored on this device. Online features are optional.</string>
+    <string name="privacy_detail">Despensa al Día was built with privacy in mind.\n\n• Your core data (inventory, settings, lists) is stored locally on your device using Room.\n• We do not require accounts, emails or passwords.\n• Optional online features may contact external public services for barcode lookup, recipes, currency rates or Gemini responses.\n• If you use Gemini, your question and pantry context can be sent to Google using your API key.\n• If you uninstall the app, your data will be lost unless you use the JSON backup feature.\n\nYour pantry, your rules, your privacy.</string>
     <string name="understood">Got it</string>
 
 

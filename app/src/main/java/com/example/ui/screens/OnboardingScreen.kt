@@ -20,6 +20,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -33,7 +35,6 @@ import com.example.R
 import com.example.ui.theme.Emerald
 import com.example.ui.theme.Sky
 import com.example.ui.theme.Amber
-import com.example.ui.theme.Cream
 import kotlinx.coroutines.launch
 
 data class OnboardData(
@@ -75,6 +76,8 @@ fun OnboardingScreen(
     )
 
     Scaffold(
+        containerColor = Color.Transparent,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             Row(
                 modifier = Modifier
@@ -91,7 +94,7 @@ fun OnboardingScreen(
                             modifier = Modifier
                                 .size(if (pagerState.currentPage == index) 20.dp else 8.dp, 8.dp)
                                 .clip(CircleShape)
-                                .background(if (pagerState.currentPage == index) Emerald else Color.LightGray)
+                                .background(if (pagerState.currentPage == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.35f))
                         )
                     }
                 }
@@ -104,8 +107,8 @@ fun OnboardingScreen(
                             onFinished()
                         }
                     },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Emerald)
+                    shape = RoundedCornerShape(18.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text(if (pagerState.currentPage == 2) stringResource(R.string.setup_confirm) else stringResource(R.string.ok))
                     Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.padding(start = 8.dp))
@@ -113,20 +116,23 @@ fun OnboardingScreen(
             }
         }
     ) { padding ->
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize().padding(padding)
-        ) { pageIdx ->
-            val page = pages[pageIdx]
-            Column(
-                modifier = Modifier.fillMaxSize().padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            AmbientGradientBackground()
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize().padding(padding)
+            ) { pageIdx ->
+                val page = pages[pageIdx]
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(28.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
                 if (page.imageRes != null) {
                     Card(
-                        modifier = Modifier.fillMaxWidth().height(250.dp).padding(bottom = 40.dp),
-                        shape = RoundedCornerShape(32.dp)
+                        modifier = Modifier.fillMaxWidth().height(260.dp).padding(bottom = 40.dp),
+                        shape = RoundedCornerShape(34.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
                         Image(
                             painter = painterResource(id = page.imageRes),
@@ -139,8 +145,14 @@ fun OnboardingScreen(
                     Box(
                         modifier = Modifier
                             .size(120.dp)
-                            .clip(RoundedCornerShape(30.dp))
-                            .background(page.color.copy(alpha = 0.1f)),
+                            .clip(RoundedCornerShape(34.dp))
+                            .background(
+                                Brush.linearGradient(
+                                    listOf(page.color.copy(alpha = 0.18f), MaterialTheme.colorScheme.surface),
+                                    start = Offset.Zero,
+                                    end = Offset(260f, 260f)
+                                )
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(page.icon, null, tint = page.color, modifier = Modifier.size(60.dp))
@@ -162,6 +174,7 @@ fun OnboardingScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
+                }
             }
         }
     }

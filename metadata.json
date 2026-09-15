@@ -1,6 +1,6 @@
 {
   "name": "Despensa al Día",
-  "description": "Controla tu inventario de alimentos, evita el desperdicio y ahorra dinero de forma 100% offline.",
+  "description": "Controla tu inventario de alimentos, evita el desperdicio y ahorra dinero con una experiencia offline-first.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }

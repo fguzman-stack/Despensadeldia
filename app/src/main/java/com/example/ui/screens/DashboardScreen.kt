@@ -5,19 +5,25 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -103,84 +109,107 @@ fun DashboardScreen(
                 onClick = { showAddDialog = true },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(20.dp),
                 modifier = Modifier.testTag("add_product_fab")
             ) {
                 Icon(imageVector = Icons.Filled.Add, contentDescription = stringResource(R.string.add_product))
             }
         },
-        modifier = modifier
+        modifier = modifier,
+        containerColor = Color.Transparent,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            AmbientGradientBackground()
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .padding(innerPadding)
+            ) {
             // Header
-            Row(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
-                    .padding(horizontal = 20.dp, vertical = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.92f),
+                                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
+                            ),
+                            start = Offset.Zero,
+                            end = Offset(900f, 240f)
+                        )
+                    )
             ) {
-                Column {
-                    Text(
-                        text = stringResource(R.string.inventory_title),
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = stringResource(R.string.inventory_count, activeProducts.size),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    IconButton(
-                        onClick = { showOnlineRecipes = true },
-                        modifier = Modifier.background(MaterialTheme.colorScheme.surface, CircleShape)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 18.dp, vertical = 18.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.MenuBook,
-                            contentDescription = "Recetas online",
-                            tint = MaterialTheme.colorScheme.primary
+                        Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.inventory_title),
+                            style = MaterialTheme.typography.headlineLarge,
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(R.string.inventory_count, activeProducts.size),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.SemiBold
                         )
                     }
-                    IconButton(
-                        onClick = { showMealPlanner = true },
-                        modifier = Modifier.background(MaterialTheme.colorScheme.surface, CircleShape)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.CalendarMonth,
-                            contentDescription = "Plan semanal",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    IconButton(
-                        onClick = { showShoppingList = true },
-                        modifier = Modifier.background(MaterialTheme.colorScheme.surface, CircleShape)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.ShoppingCart,
-                            contentDescription = stringResource(R.string.shopping_list),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    if (settings.geminiApiKey.isNotBlank()) {
-                        IconButton(
-                            onClick = { showAIAssistant = true },
-                            modifier = Modifier.background(MaterialTheme.colorScheme.surface, CircleShape)
+                        Surface(
+                            shape = RoundedCornerShape(18.dp),
+                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f)
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.AutoAwesome,
-                                contentDescription = "Asistente IA",
-                                tint = MaterialTheme.colorScheme.primary
+                                imageVector = Icons.Filled.Kitchen,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(12.dp).size(24.dp)
                             )
                         }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        HeaderActionButton(
+                            icon = Icons.AutoMirrored.Filled.MenuBook,
+                            contentDescription = "Recetas online",
+                            onClick = { showOnlineRecipes = true },
+                            modifier = Modifier.weight(1f)
+                        )
+                        HeaderActionButton(
+                            icon = Icons.Filled.CalendarMonth,
+                            contentDescription = "Plan semanal",
+                            onClick = { showMealPlanner = true },
+                            modifier = Modifier.weight(1f)
+                        )
+                        HeaderActionButton(
+                            icon = Icons.Filled.ShoppingCart,
+                            contentDescription = stringResource(R.string.shopping_list),
+                            onClick = { showShoppingList = true },
+                            modifier = Modifier.weight(1f)
+                        )
+                        HeaderActionButton(
+                            icon = Icons.Filled.AutoAwesome,
+                            contentDescription = "Asistente IA",
+                            onClick = { showAIAssistant = true },
+                            modifier = Modifier.weight(1f)
+                        )
                     }
                 }
             }
@@ -208,7 +237,7 @@ fun DashboardScreen(
                     colors = textFieldColors,
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(22.dp)
                 )
 
                 // Location filter chips
@@ -377,6 +406,7 @@ fun DashboardScreen(
                     }
                 }
             }
+            }
         }
     }
 
@@ -389,7 +419,7 @@ fun DashboardScreen(
             frequentProducts = frequentProducts,
             onDismiss = { showAddDialog = false },
             onConfirm = { name, cat, price, qty, unit, location, expiryType, expDate, barcode, notes, brand, minStock ->
-                viewModel.addProduct(name, cat, price, qty, unit, location, expiryType, expDate, barcode, notes, brand)
+                viewModel.addProduct(name, cat, price, qty, unit, location, expiryType, expDate, barcode, notes, brand, minStock)
                 showAddDialog = false
             }
         )
@@ -402,7 +432,7 @@ fun DashboardScreen(
             currencySymbol = currencySymbol,
             onDismiss = { productToEdit = null },
             onConfirm = { name, cat, price, qty, unit, location, expiryType, expDate, barcode, notes, brand, minStock ->
-                viewModel.updateProduct(productToEdit!!.id, name, cat, price, qty, unit, location, expiryType, expDate, barcode, notes, brand)
+                viewModel.updateProduct(productToEdit!!.id, name, cat, price, qty, unit, location, expiryType, expDate, barcode, notes, brand, minStock)
                 productToEdit = null
             }
         )
@@ -422,7 +452,7 @@ fun DashboardScreen(
         )
     }
 
-    if (showAIAssistant && settings.geminiApiKey.isNotBlank()) {
+    if (showAIAssistant) {
         AIAssistantSheet(
             viewModel = viewModel,
             products = activeProducts,
@@ -445,6 +475,30 @@ fun DashboardScreen(
             products = activeProducts,
             onDismiss = { showOnlineRecipes = false }
         )
+    }
+}
+
+@Composable
+private fun HeaderActionButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier.height(48.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.82f)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(23.dp)
+            )
+        }
     }
 }
 
@@ -554,9 +608,9 @@ fun ProductCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onEdit() },
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f))
     ) {
         Row(
             modifier = Modifier
@@ -570,7 +624,7 @@ fun ProductCard(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(statusColor.copy(alpha = 0.1f)),
+                    .background(statusColor.copy(alpha = 0.14f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -679,12 +733,28 @@ fun EmptyStateView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            imageVector = Icons.Filled.Kitchen,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-            modifier = Modifier.size(100.dp)
+        val composition by com.airbnb.lottie.compose.rememberLottieComposition(
+            com.airbnb.lottie.compose.LottieCompositionSpec.RawRes(com.example.R.raw.bolsadecompra)
         )
+        val progress by com.airbnb.lottie.compose.animateLottieCompositionAsState(
+            composition,
+            iterations = com.airbnb.lottie.compose.LottieConstants.IterateForever
+        )
+
+        if (composition == null) {
+            Icon(
+                imageVector = Icons.Filled.Kitchen,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                modifier = Modifier.size(100.dp)
+            )
+        } else {
+            com.airbnb.lottie.compose.LottieAnimation(
+                composition = composition,
+                progress = { progress },
+                modifier = Modifier.size(150.dp)
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = if (searchActive) stringResource(R.string.inventory_no_results) else stringResource(R.string.inventory_empty),
@@ -801,7 +871,7 @@ fun UnitField(
             placeholder = { Text("uds, kg, L…") },
             colors = unitFieldColors,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
-            modifier = Modifier.menuAnchor().fillMaxWidth(),
+            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
             singleLine = true
         )
         ExposedDropdownMenu(expanded = unitExpanded, onDismissRequest = { onExpandedChange(false) }) {
@@ -910,7 +980,10 @@ fun AddEditProductDialog(
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
                 // Frequent products (only for new products)
                 if (product == null && frequentProducts.isNotEmpty()) {
                     Text(
@@ -1029,7 +1102,7 @@ fun AddEditProductDialog(
                         label = { Text(stringResource(R.string.category)) },
                         colors = fieldColors,
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                        modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth()
                     )
                     ExposedDropdownMenu(expanded = categoryExpanded, onDismissRequest = { categoryExpanded = false }) {
                         allCategoryNames.forEach { catName ->
@@ -1233,6 +1306,7 @@ fun AddEditProductDialog(
         )
     }
 
+    val localCtx = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.barcodeLookupResult.collect { result ->
             if (result != null) {
@@ -1240,6 +1314,11 @@ fun AddEditProductDialog(
                 if (result.brand != null) brand = result.brand
                 if (result.quantity != null && result.quantity > 0) quantityStr = result.quantity.toString()
                 if (result.unit != null) unit = result.unit
+                if (result.inferredCategory != null) category = result.inferredCategory
+                if (result.inferredLocation != null) location = result.inferredLocation
+                android.widget.Toast.makeText(localCtx, "Producto autocompletado", android.widget.Toast.LENGTH_SHORT).show()
+            } else {
+                android.widget.Toast.makeText(localCtx, "No encontrado en la base de datos, ingresa manualmente", android.widget.Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -1313,12 +1392,14 @@ fun NutritionDialog(
 fun AIAssistantSheet(
     viewModel: PantryViewModel,
     products: List<Product>,
-    apiKey: String,
+    apiKey: String = "",
     onDismiss: () -> Unit
 ) {
     var question by remember { mutableStateOf("") }
     var response by remember { mutableStateOf<String?>(null) }
     val isLoading by viewModel.geminiLoading.collectAsState()
+
+    val useGemini = apiKey.isNotBlank()
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(
@@ -1330,10 +1411,33 @@ fun AIAssistantSheet(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("Asistente de Despensa IA", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Text("Pregunta qué cocinar, qué comprar, o consejos con lo que tienes.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Asistente de Despensa", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.width(8.dp))
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = if (useGemini) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                        else MaterialTheme.colorScheme.tertiary.copy(alpha = 0.12f)
+                ) {
+                    Text(
+                        text = if (useGemini) "✨ Gemini IA" else "🤖 Chatbot local",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (useGemini) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+            Text(
+                text = if (useGemini) "Asistente potenciado por Gemini AI. Pregunta lo que quieras."
+                    else "Pregunta qué cocinar, consejos de conservación, o sustituciones.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
-            val productList = products.joinToString(", ") { it.name }
+            val productNames = products.map { it.name }
+            val productListStr = products.joinToString(", ") { it.name }
 
             OutlinedTextField(
                 value = question,
@@ -1346,7 +1450,11 @@ fun AIAssistantSheet(
 
             Button(
                 onClick = {
-                    viewModel.askGemini(apiKey, productList, question)
+                    if (useGemini) {
+                        viewModel.askGemini(apiKey, productListStr, question)
+                    } else {
+                        viewModel.askChatbot(productNames, question)
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = question.isNotBlank() && !isLoading
@@ -1358,9 +1466,17 @@ fun AIAssistantSheet(
                 Text(if (isLoading) "Pensando..." else "Preguntar")
             }
 
-            LaunchedEffect(Unit) {
-                viewModel.geminiResponse.collect { reply ->
-                    response = reply
+            if (!useGemini) {
+                LaunchedEffect(Unit) {
+                    viewModel.chatbotResponse.collect { reply ->
+                        response = reply
+                    }
+                }
+            } else {
+                LaunchedEffect(Unit) {
+                    viewModel.geminiResponse.collect { reply ->
+                        response = reply
+                    }
                 }
             }
 
@@ -1390,6 +1506,7 @@ fun OnlineRecipeSheet(
     onDismiss: () -> Unit
 ) {
     val onlineRecipes by viewModel.onlineRecipes.collectAsState()
+    val isLoading by viewModel.onlineRecipesLoading.collectAsState()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(products) {
@@ -1412,14 +1529,24 @@ fun OnlineRecipeSheet(
                 Text("Desde TheMealDB • Basadas en tu despensa", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
             }
 
-            if (onlineRecipes.isEmpty()) {
+            if (isLoading) {
                 item {
                     Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))) {
                         Column(Modifier.padding(24.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(Icons.Filled.MenuBook, contentDescription = null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(48.dp))
-                            Spacer(Modifier.height(8.dp))
+                            CircularProgressIndicator(modifier = Modifier.size(48.dp), color = MaterialTheme.colorScheme.primary)
+                            Spacer(Modifier.height(16.dp))
                             Text("Buscando recetas...", style = MaterialTheme.typography.titleMedium)
-                            Text("Asegúrate de tener productos en tu despensa", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            } else if (onlineRecipes.isEmpty()) {
+                item {
+                    Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))) {
+                        Column(Modifier.padding(24.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(48.dp))
+                            Spacer(Modifier.height(8.dp))
+                            Text("No se encontraron recetas", style = MaterialTheme.typography.titleMedium)
+                            Text("Intenta agregar otros ingredientes", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }

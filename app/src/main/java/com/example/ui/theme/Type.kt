@@ -9,21 +9,21 @@ import androidx.compose.ui.unit.sp
 val Typography = Typography(
   displayLarge = TextStyle(
     fontFamily = FontFamily.Default,
-    fontWeight = FontWeight.ExtraBold,
-    fontSize = 34.sp,
+    fontWeight = FontWeight.Black,
+    fontSize = 36.sp,
     lineHeight = 42.sp,
-    letterSpacing = (-0.5).sp
+    letterSpacing = (-0.8).sp
   ),
   displayMedium = TextStyle(
     fontFamily = FontFamily.Default,
-    fontWeight = FontWeight.Bold,
-    fontSize = 28.sp,
+    fontWeight = FontWeight.ExtraBold,
+    fontSize = 29.sp,
     lineHeight = 36.sp,
     letterSpacing = (-0.25).sp
   ),
   headlineLarge = TextStyle(
     fontFamily = FontFamily.Default,
-    fontWeight = FontWeight.Bold,
+    fontWeight = FontWeight.ExtraBold,
     fontSize = 26.sp,
     lineHeight = 34.sp,
     letterSpacing = 0.sp
@@ -66,9 +66,9 @@ val Typography = Typography(
   bodyLarge = TextStyle(
     fontFamily = FontFamily.Default,
     fontWeight = FontWeight.Normal,
-    fontSize = 16.sp,
+    fontSize = 15.sp,
     lineHeight = 24.sp,
-    letterSpacing = 0.5.sp
+    letterSpacing = 0.15.sp
   ),
   bodyMedium = TextStyle(
     fontFamily = FontFamily.Default,

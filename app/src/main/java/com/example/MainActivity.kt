@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Kitchen
@@ -135,10 +136,11 @@ fun PantryAppContainer(viewModel: PantryViewModel) {
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             NavigationBar(
                 containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = 2.dp,
+                tonalElevation = 0.dp,
                 modifier = Modifier.testTag("pantry_bottom_nav_bar")
             ) {
                 NavigationBarItem(
@@ -154,7 +156,7 @@ fun PantryAppContainer(viewModel: PantryViewModel) {
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,
                         selectedTextColor = MaterialTheme.colorScheme.primary,
-                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.82f),
                     ),
                     modifier = Modifier.testTag("nav_item_use_first")
                 )
@@ -171,7 +173,7 @@ fun PantryAppContainer(viewModel: PantryViewModel) {
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,
                         selectedTextColor = MaterialTheme.colorScheme.primary,
-                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.82f),
                     ),
                     modifier = Modifier.testTag("nav_item_inventory")
                 )
@@ -188,7 +190,7 @@ fun PantryAppContainer(viewModel: PantryViewModel) {
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,
                         selectedTextColor = MaterialTheme.colorScheme.primary,
-                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.82f),
                     ),
                     modifier = Modifier.testTag("nav_item_stats")
                 )
@@ -205,7 +207,7 @@ fun PantryAppContainer(viewModel: PantryViewModel) {
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,
                         selectedTextColor = MaterialTheme.colorScheme.primary,
-                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.82f),
                     ),
                     modifier = Modifier.testTag("nav_item_settings")
                 )

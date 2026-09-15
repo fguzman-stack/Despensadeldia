@@ -3,9 +3,12 @@ package com.example.ui.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.dp
 
 private val LightColorScheme = lightColorScheme(
   primary = EmeraldDark,
@@ -26,7 +29,7 @@ private val LightColorScheme = lightColorScheme(
   onErrorContainer = Color(0xFF8B2D1C),
   background = Cream,
   onBackground = TextPrimary,
-  surface = Color.White,
+  surface = StoneLight,
   onSurface = TextPrimary,
   surfaceVariant = Stone,
   onSurfaceVariant = TextSecondary,
@@ -100,6 +103,14 @@ private val PremiumColorScheme = darkColorScheme(
   surfaceTint = PremiumAction
 )
 
+private val AppShapes = Shapes(
+  extraSmall = RoundedCornerShape(10.dp),
+  small = RoundedCornerShape(14.dp),
+  medium = RoundedCornerShape(20.dp),
+  large = RoundedCornerShape(28.dp),
+  extraLarge = RoundedCornerShape(34.dp)
+)
+
 @Composable
 fun MyApplicationTheme(
   darkTheme: Boolean = isSystemInDarkTheme(),
@@ -110,5 +121,5 @@ fun MyApplicationTheme(
     "ASTRAL" -> PremiumColorScheme
     else -> if (darkTheme) DarkColorScheme else LightColorScheme
   }
-  MaterialTheme(colorScheme = colorScheme, typography = Typography, content = content)
+  MaterialTheme(colorScheme = colorScheme, typography = Typography, shapes = AppShapes, content = content)
 }

@@ -10,7 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [Product::class, AppSettings::class, ShoppingItem::class],
-    version = 5,
+    version = 6,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -207,6 +207,72 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Migration v5 -> v6:
+         * - Add app_settings table used by onboarding, notifications and theme settings.
+         */
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                if (!tableExists(db, "app_settings")) {
+                    createAppSettingsTable(db, "app_settings")
+                } else if (!hasColumn(db, "app_settings", "geminiApiKey")) {
+                    createAppSettingsTable(db, "app_settings_new")
+                    db.execSQL("""
+                        INSERT INTO app_settings_new (
+                            id, onboardingCompleted, countryName, currencyCode, currencySymbol,
+                            theme, notificationHour, notificationMinute, notificationEnabled,
+                            streakDays, lastCheckTimestamp, geminiApiKey
+                        )
+                        SELECT
+                            id, onboardingCompleted, countryName, currencyCode, currencySymbol,
+                            theme, notificationHour, notificationMinute, notificationEnabled,
+                            streakDays, lastCheckTimestamp, ''
+                        FROM app_settings
+                    """)
+                    db.execSQL("DROP TABLE app_settings")
+                    db.execSQL("ALTER TABLE app_settings_new RENAME TO app_settings")
+                }
+            }
+        }
+
+        private fun createAppSettingsTable(db: SupportSQLiteDatabase, tableName: String) {
+            db.execSQL("""
+                CREATE TABLE IF NOT EXISTS $tableName (
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    onboardingCompleted INTEGER NOT NULL,
+                    countryName TEXT NOT NULL,
+                    currencyCode TEXT NOT NULL,
+                    currencySymbol TEXT NOT NULL,
+                    theme TEXT NOT NULL,
+                    notificationHour INTEGER NOT NULL,
+                    notificationMinute INTEGER NOT NULL,
+                    notificationEnabled INTEGER NOT NULL,
+                    streakDays INTEGER NOT NULL,
+                    lastCheckTimestamp INTEGER NOT NULL,
+                    geminiApiKey TEXT NOT NULL
+                )
+            """)
+        }
+
+        private fun tableExists(db: SupportSQLiteDatabase, tableName: String): Boolean {
+            db.query(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
+                arrayOf(tableName)
+            ).use { cursor ->
+                return cursor.moveToFirst()
+            }
+        }
+
+        private fun hasColumn(db: SupportSQLiteDatabase, tableName: String, columnName: String): Boolean {
+            db.query("PRAGMA table_info($tableName)").use { cursor ->
+                val nameIndex = cursor.getColumnIndex("name")
+                while (cursor.moveToNext()) {
+                    if (nameIndex >= 0 && cursor.getString(nameIndex) == columnName) return true
+                }
+            }
+            return false
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -214,7 +280,13 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "despensa_database"
                 )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                .addMigrations(
+                    MIGRATION_1_2,
+                    MIGRATION_2_3,
+                    MIGRATION_3_4,
+                    MIGRATION_4_5,
+                    MIGRATION_5_6
+                )
                 .build()
                 INSTANCE = instance
                 instance

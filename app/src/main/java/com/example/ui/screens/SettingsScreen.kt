@@ -58,6 +58,8 @@ fun SettingsScreen(
     var geminiApiKey by remember { mutableStateOf("") }
     var exchangeRates by remember { mutableStateOf<Map<String, Double>?>(null) }
     var convertingCurrency by remember { mutableStateOf(false) }
+    var importPreview by remember { mutableStateOf<BackupHelper.ImportPreview?>(null) }
+    var importError by remember { mutableStateOf<String?>(null) }
 
     // Initialize state from DB values
     LaunchedEffect(settings) {
@@ -83,18 +85,43 @@ fun SettingsScreen(
     
     val scope = rememberCoroutineScope()
     var showPrivacyDialog by remember { mutableStateOf(false) }
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+        onResult = { uri ->
+            if (uri != null) {
+                scope.launch {
+                    try {
+                        val json = context.contentResolver.openInputStream(uri)
+                            ?.bufferedReader()
+                            ?.use { it.readText() }
+                            .orEmpty()
+                        importPreview = BackupHelper.parseProductsJson(json)
+                        importError = null
+                    } catch (e: Exception) {
+                        importPreview = null
+                        importError = e.message ?: context.getString(R.string.import_error)
+                    }
+                }
+            }
+        }
+    )
 
     Scaffold(
-        modifier = modifier
+        modifier = modifier,
+        containerColor = Color.Transparent,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            AmbientGradientBackground()
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .padding(innerPadding)
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
             Text(
                 text = stringResource(R.string.settings_title),
                 style = MaterialTheme.typography.titleLarge,
@@ -187,52 +214,57 @@ fun SettingsScreen(
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    val themes = listOf(
-                        Triple("SYSTEM", stringResource(R.string.theme_system), Icons.Filled.SettingsSystemDaydream),
-                        Triple("LIGHT", stringResource(R.string.theme_light), Icons.Filled.LightMode),
-                        Triple("DARK", stringResource(R.string.theme_dark), Icons.Filled.DarkMode),
-                        Triple("ASTRAL", stringResource(R.string.theme_fruit_pop), Icons.Filled.VolunteerActivism)
-                    )
+                val themes = listOf(
+                    Triple("SYSTEM", stringResource(R.string.theme_system), Icons.Filled.SettingsSystemDaydream),
+                    Triple("LIGHT", stringResource(R.string.theme_light), Icons.Filled.LightMode),
+                    Triple("DARK", stringResource(R.string.theme_dark), Icons.Filled.DarkMode),
+                    Triple("ASTRAL", stringResource(R.string.theme_fruit_pop), Icons.Filled.VolunteerActivism)
+                )
 
-                    themes.forEach { (themeCode, themeLabel, themeIcon) ->
-                        val isSelected = selectedTheme == themeCode
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(50.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(
-                                    if (isSelected) MaterialTheme.colorScheme.primaryContainer 
-                                    else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                                )
-                                .clickable {
-                                    selectedTheme = themeCode
-                                    saveChanges(viewModel, settings, currencySymbol, selectedTheme, notificationEnabled, notificationHour, notificationMinute, context)
-                                }
-                                .padding(8.dp),
-                            contentAlignment = Alignment.Center
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    themes.chunked(2).forEach { rowThemes ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Icon(
-                                    imageVector = themeIcon,
-                                    contentDescription = null,
-                                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Text(
-                                    text = themeLabel,
-                                    fontSize = 13.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
-                                )
+                            rowThemes.forEach { (themeCode, themeLabel, themeIcon) ->
+                                val isSelected = selectedTheme == themeCode
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(58.dp)
+                                        .clip(RoundedCornerShape(18.dp))
+                                        .background(
+                                            if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.48f)
+                                        )
+                                        .clickable {
+                                            selectedTheme = themeCode
+                                            saveChanges(viewModel, settings, currencySymbol, selectedTheme, notificationEnabled, notificationHour, notificationMinute, context)
+                                        }
+                                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = themeIcon,
+                                            contentDescription = null,
+                                            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Text(
+                                            text = themeLabel,
+                                            fontSize = 14.sp,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                }
                             }
+                            if (rowThemes.size == 1) Spacer(modifier = Modifier.weight(1f))
                         }
                     }
                 }
@@ -250,6 +282,20 @@ fun SettingsScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OutlinedButton(
+                        onClick = {
+                            scope.launch {
+                                val products = viewModel.getAllProductsDirect()
+                                BackupHelper.exportToJson(context, products)
+                            }
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Filled.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.export_json))
+                    }
+
+                    OutlinedButton(
                         onClick = { 
                             scope.launch {
                                 val products = viewModel.getAllProductsDirect()
@@ -263,10 +309,36 @@ fun SettingsScreen(
                         Text(stringResource(R.string.export_csv))
                     }
                 }
+
+                Button(
+                    onClick = { importLauncher.launch(arrayOf("application/json", "text/*", "*/*")) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Filled.FileUpload, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.import_json))
+                }
+
+                Text(
+                    text = stringResource(R.string.import_json_warning),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
             // 5. Currency Converter Section
             SettingsSection(title = "Moneda") {
+                OutlinedTextField(
+                    value = currencySymbol,
+                    onValueChange = { 
+                        currencySymbol = it
+                        saveChanges(viewModel, settings, it, selectedTheme, notificationEnabled, notificationHour, notificationMinute, context)
+                    },
+                    label = { Text("Símbolo de moneda principal") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "Tasas de cambio actuales (fuente: BCE)",
                     style = MaterialTheme.typography.bodySmall,
@@ -281,6 +353,9 @@ fun SettingsScreen(
                             scope.launch {
                                 convertingCurrency = true
                                 val rates = FrankfurterService.getAllRates("USD")
+                                if (rates == null) {
+                                    android.widget.Toast.makeText(context, "Error al obtener tasas de cambio. Verifica tu conexión.", android.widget.Toast.LENGTH_SHORT).show()
+                                }
                                 exchangeRates = rates
                                 convertingCurrency = false
                             }
@@ -323,7 +398,7 @@ fun SettingsScreen(
             // 6. AI Assistant Section
             SettingsSection(title = "Asistente IA") {
                 Text(
-                    text = "Configura tu API key de Gemini (gratis en aistudio.google.com) para usar el asistente de despensa inteligente.",
+                    text = "El asistente funciona sin configuración. Si deseas respuestas más avanzadas, puedes añadir una API Key de Gemini (gratis en aistudio.google.com) — opcional.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -363,6 +438,7 @@ fun SettingsScreen(
 
 
             }
+            }
         }
     }
     
@@ -375,6 +451,50 @@ fun SettingsScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showPrivacyDialog = false }) { Text(stringResource(R.string.understood)) }
+            }
+        )
+    }
+
+    importError?.let { message ->
+        AlertDialog(
+            onDismissRequest = { importError = null },
+            title = { Text(stringResource(R.string.import_error_title)) },
+            text = { Text(message) },
+            confirmButton = {
+                TextButton(onClick = { importError = null }) { Text(stringResource(R.string.ok)) }
+            }
+        )
+    }
+
+    importPreview?.let { preview ->
+        AlertDialog(
+            onDismissRequest = { importPreview = null },
+            title = { Text(stringResource(R.string.import_confirm_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.import_confirm_message,
+                        preview.products.size,
+                        preview.skipped
+                    )
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.replaceAllProducts(preview.products)
+                        importPreview = null
+                        android.widget.Toast.makeText(
+                            context,
+                            context.getString(R.string.import_success, preview.products.size),
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    },
+                    enabled = preview.products.isNotEmpty()
+                ) { Text(stringResource(R.string.import_replace)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { importPreview = null }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }
@@ -440,11 +560,11 @@ fun SettingsSection(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),

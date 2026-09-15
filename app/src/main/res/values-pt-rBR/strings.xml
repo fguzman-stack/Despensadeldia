@@ -162,10 +162,18 @@
     <string name="data_description">Exporte seus dados para guardar ou analisar.</string>
     <string name="export_json">Backup JSON</string>
     <string name="export_csv">Exportar CSV</string>
+    <string name="import_json">Importar backup JSON</string>
+    <string name="import_json_warning">Importar substitui o inventário atual. Exporte um backup antes se quiser mantê-lo.</string>
+    <string name="import_confirm_title">Substituir inventário?</string>
+    <string name="import_confirm_message">O arquivo selecionado contém %1$d produtos. %2$d entradas não puderam ser lidas. Seu inventário atual será substituído.</string>
+    <string name="import_replace">Substituir inventário</string>
+    <string name="import_success">%1$d produtos importados</string>
+    <string name="import_error_title">Falha ao importar</string>
+    <string name="import_error">Não foi possível importar o backup selecionado.</string>
     <string name="section_about">Sobre o Despensa al Día</string>
     <string name="privacy_title">Privacidade de Dados</string>
-    <string name="privacy_description">Todas as suas informações são armazenadas apenas neste dispositivo. Não usamos servidores em nuvem.</string>
-    <string name="privacy_detail">O Despensa al Día foi construído com a privacidade em mente.\n\n• Seus dados (inventário, configurações, listas) são armazenados localmente no seu dispositivo usando um banco de dados interno (Room).\n• Não exigimos contas, e-mails ou senhas.\n• Não compartilhamos nem enviamos seus hábitos de consumo para nenhum servidor externo.\n• Se você desinstalar o aplicativo, seus dados serão perdidos a menos que use o recurso de Backup JSON.\n\nSua despensa, suas regras, sua privacidade.</string>
+    <string name="privacy_description">Seu inventário principal fica neste dispositivo. Recursos online são opcionais.</string>
+    <string name="privacy_detail">O Despensa al Día foi construído com privacidade em mente.\n\n• Seus dados principais (inventário, configurações, listas) são armazenados localmente no dispositivo usando Room.\n• Não exigimos contas, e-mails ou senhas.\n• Recursos online opcionais podem consultar serviços externos para códigos de barras, receitas, câmbio ou respostas do Gemini.\n• Se você usar Gemini, sua pergunta e contexto da despensa podem ser enviados ao Google usando sua API key.\n• Se você desinstalar o aplicativo, seus dados serão perdidos a menos que use o recurso de Backup JSON.\n\nSua despensa, suas regras, sua privacidade.</string>
     <string name="understood">Entendi</string>
 
     <string name="setup_title">Preferências</string>

@@ -19,11 +19,13 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -102,7 +104,9 @@ fun UseFirstScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        modifier = modifier
+        modifier = modifier,
+        containerColor = Color.Transparent,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { innerPadding ->
         if (!hasUrgentItems) {
             AllClearView(
@@ -164,7 +168,7 @@ fun UseFirstScreen(
                                     shape = RoundedCornerShape(16.dp)
                                 ) {
                                     Icon(
-                                        Icons.Filled.MenuBook,
+                                        Icons.AutoMirrored.Filled.MenuBook,
                                         contentDescription = null,
                                         modifier = Modifier.size(20.dp)
                                     )
@@ -354,25 +358,25 @@ fun UseFirstScreen(
 @Composable
 fun AmbientGradientBackground() {
     val bg = MaterialTheme.colorScheme.background
-    val isFruitPop = bg == Color(0xFF1A0F14)
-    val isDark = bg == Color(0xFF101814) || isFruitPop
+    val isFruitPop = bg == Color(0xFF17120F)
+    val isDark = bg == Color(0xFF121712) || isFruitPop
     val colors = if (isFruitPop) {
         listOf(
-            Color(0xFF1A0F14),
-            Color(0xFF2A1522),
-            Color(0xFF22101A)
+            Color(0xFF17120F),
+            Color(0xFF2C1D16),
+            Color(0xFF191410)
         )
     } else if (isDark) {
         listOf(
-            Color(0xFF101814),
-            Color(0xFF0F1F16),
-            Color(0xFF0E1A12)
+            Color(0xFF121712),
+            Color(0xFF1A281B),
+            Color(0xFF151B14)
         )
     } else {
         listOf(
-            Color(0xFFF7F5EE),
-            Color(0xFFF4F3EA),
-            Color(0xFFF0EFE4)
+            Color(0xFFFFF8EC),
+            Color(0xFFFFF1DA),
+            Color(0xFFF7E8CF)
         )
     }
     Canvas(modifier = Modifier.fillMaxSize()) {
@@ -395,10 +399,10 @@ fun UrgencyHeroCard(
     todayCount: Int
 ) {
     val bg = MaterialTheme.colorScheme.background
-    val isFruitPop = bg == Color(0xFF1A0F14)
-    val isDark = bg == Color(0xFF101814) || isFruitPop
-    val gradientStart = if (isFruitPop) Color(0xFF2A1A2A) else if (isDark) Color(0xFF1A3A2A) else Color(0xFFE8F5EE)
-    val gradientEnd = if (isFruitPop) Color(0xFF1F1520) else if (isDark) Color(0xFF1E3028) else Color(0xFFF5F0E0)
+    val isFruitPop = bg == Color(0xFF17120F)
+    val isDark = bg == Color(0xFF121712) || isFruitPop
+    val gradientStart = if (isFruitPop) Color(0xFF3A241A) else if (isDark) Color(0xFF203421) else Color(0xFFFFE7B8)
+    val gradientEnd = if (isFruitPop) Color(0xFF211813) else if (isDark) Color(0xFF1C251D) else Color(0xFFE3F2D7)
 
     val animatedCount by animateIntAsState(
         targetValue = totalUrgent,
@@ -409,7 +413,7 @@ fun UrgencyHeroCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 4.dp),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(30.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -422,7 +426,7 @@ fun UrgencyHeroCard(
                         start = Offset.Zero,
                         end = Offset(1000f, 200f)
                     ),
-                    shape = RoundedCornerShape(24.dp)
+                    shape = RoundedCornerShape(30.dp)
                 )
         ) {
             Row(
@@ -559,8 +563,8 @@ fun ProductCard(
         modifier = Modifier
             .fillMaxWidth()
             .graphicsLayer(alpha = animatedAlpha),
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
@@ -568,7 +572,7 @@ fun ProductCard(
                 modifier = Modifier
                     .width(4.dp)
                     .fillMaxHeight()
-                    .clip(RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp))
+                    .clip(RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp))
                     .background(urgencyColor)
             )
             Column(modifier = Modifier.padding(14.dp)) {
@@ -704,7 +708,7 @@ fun AllClearView(
             modifier = Modifier
                 .size(100.dp)
                 .clip(CircleShape)
-                .background(Emerald.copy(alpha = 0.1f)),
+            .background(Emerald.copy(alpha = 0.14f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -735,7 +739,7 @@ fun AllClearView(
             shape = RoundedCornerShape(12.dp)
         ) {
             Icon(
-                Icons.Filled.MenuBook,
+                Icons.AutoMirrored.Filled.MenuBook,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)
             )

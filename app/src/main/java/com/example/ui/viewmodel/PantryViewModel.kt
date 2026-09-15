@@ -11,6 +11,7 @@ import com.example.data.local.ProductFrequent
 import com.example.data.local.ProductLocation
 import com.example.data.local.ProductStatus
 import com.example.data.recipe.RecipeCatalog
+import com.example.data.ai.PantryChatbot
 import com.example.data.remote.BarcodeLookupResult
 import com.example.data.remote.BarcodeLookupService
 import com.example.data.remote.FrankfurterService
@@ -185,7 +186,7 @@ class PantryViewModel(
 
     // ─── Barcode Lookup ────────────────────────────────────────────
 
-    private val _barcodeLookupResult = MutableSharedFlow<BarcodeLookupResult?>(replay = 1)
+    private val _barcodeLookupResult = MutableSharedFlow<BarcodeLookupResult?>()
     val barcodeLookupResult: SharedFlow<BarcodeLookupResult?> = _barcodeLookupResult
 
     fun lookupByBarcode(barcode: String) {
@@ -209,7 +210,7 @@ class PantryViewModel(
 
     // ─── Frankfurter Currency ──────────────────────────────────────
 
-    private val _conversionResult = MutableSharedFlow<Double?>(replay = 1)
+    private val _conversionResult = MutableSharedFlow<Double?>()
     val conversionResult: SharedFlow<Double?> = _conversionResult
 
     fun convertCurrency(amount: Double, from: String, to: String) {
@@ -221,7 +222,7 @@ class PantryViewModel(
 
     // ─── Nutrition Info ────────────────────────────────────────────
 
-    private val _nutritionResult = MutableSharedFlow<NutritionInfo?>(replay = 1)
+    private val _nutritionResult = MutableSharedFlow<NutritionInfo?>()
     val nutritionResult: SharedFlow<NutritionInfo?> = _nutritionResult
 
     fun lookupNutrition(barcode: String) {
@@ -236,9 +237,15 @@ class PantryViewModel(
     private val _onlineRecipes = MutableStateFlow<List<MealDBRecipe>>(emptyList())
     val onlineRecipes: StateFlow<List<MealDBRecipe>> = _onlineRecipes
 
+    private val _onlineRecipesLoading = MutableStateFlow(false)
+    val onlineRecipesLoading: StateFlow<Boolean> = _onlineRecipesLoading
+
     fun searchOnlineRecipes(ingredients: List<String>) {
         viewModelScope.launch {
+            _onlineRecipesLoading.value = true
+            _onlineRecipes.value = emptyList() // clear previous
             _onlineRecipes.value = TheMealDBService.searchByIngredients(ingredients)
+            _onlineRecipesLoading.value = false
         }
     }
 
@@ -261,6 +268,20 @@ Instrucciones: Responde en español, sé conciso, sugiere recetas y consejos.
             val config = GeminiConfig(apiKey = apiKey)
             val reply = GeminiService.sendMessage(config, context, question)
             _geminiResponse.emit(reply)
+            _geminiLoading.value = false
+        }
+    }
+
+    // ─── Local Chatbot ────────────────────────────────────────
+
+    private val _chatbotResponse = MutableSharedFlow<String?>(replay = 1)
+    val chatbotResponse: SharedFlow<String?> = _chatbotResponse
+
+    fun askChatbot(products: List<String>, question: String) {
+        viewModelScope.launch {
+            _geminiLoading.value = true
+            val reply = PantryChatbot.ask(products, question)
+            _chatbotResponse.emit(reply)
             _geminiLoading.value = false
         }
     }
@@ -304,7 +325,8 @@ Instrucciones: Responde en español, sé conciso, sugiere recetas y consejos.
         expirationDate: Long?,
         barcode: String? = null,
         notes: String? = null,
-        brand: String? = null
+        brand: String? = null,
+        minimumStock: Double? = null
     ) {
         viewModelScope.launch {
             repository.insertProduct(
@@ -320,7 +342,8 @@ Instrucciones: Responde en español, sé conciso, sugiere recetas y consejos.
                         .takeIf { expiryType != ExpiryType.NONE },
                     barcode = barcode,
                     notes = notes,
-                    brand = brand
+                    brand = brand,
+                    minimumStock = minimumStock
                 )
             )
             // Remember last used values for quick entry
@@ -344,7 +367,8 @@ Instrucciones: Responde en español, sé conciso, sugiere recetas y consejos.
         expirationDate: Long?,
         barcode: String? = null,
         notes: String? = null,
-        brand: String? = null
+        brand: String? = null,
+        minimumStock: Double? = null
     ) {
         viewModelScope.launch {
             val existing = repository.getProductById(id) ?: return@launch
@@ -363,7 +387,8 @@ Instrucciones: Responde en español, sé conciso, sugiere recetas y consejos.
                     resolvedDate = null,
                     barcode = barcode,
                     notes = notes,
-                    brand = brand
+                    brand = brand,
+                    minimumStock = minimumStock
                 )
             )
         }
@@ -446,6 +471,15 @@ Instrucciones: Responde en español, sé conciso, sugiere recetas y consejos.
 
     suspend fun getAllProductsDirect(): List<Product> {
         return repository.getAllProductsDirect()
+    }
+
+    fun replaceAllProducts(products: List<Product>) {
+        viewModelScope.launch {
+            repository.deleteAllProducts()
+            products.forEach { product ->
+                repository.insertProduct(product.copy(id = 0))
+            }
+        }
     }
 
     // ─── Shopping List ─────────────────────────────────────────────

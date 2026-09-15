@@ -4,7 +4,11 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.core.content.FileProvider
+import com.example.data.local.ExpiryType
 import com.example.data.local.Product
+import com.example.data.local.ProductCategory
+import com.example.data.local.ProductLocation
+import com.example.data.local.ProductStatus
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -13,35 +17,53 @@ import java.util.Date
 import java.util.Locale
 
 object BackupHelper {
+    data class ImportPreview(
+        val products: List<Product>,
+        val skipped: Int
+    )
+
+    data class ImportResult(
+        val imported: Int,
+        val skipped: Int
+    )
     
     fun exportToJson(context: Context, products: List<Product>) {
         try {
             val array = JSONArray()
-            products.forEach { p ->
-                val obj = JSONObject()
-                obj.put("name", p.name)
-                obj.put("category", p.category)
-                obj.put("totalPrice", p.totalPrice)
-                obj.put("quantity", p.quantity)
-                obj.put("unit", p.unit)
-                obj.put("location", p.location.name)
-                obj.put("expiryType", p.expiryType.name)
-                if (p.expirationDate != null) obj.put("expirationDate", p.expirationDate)
-                obj.put("addedDate", p.addedDate)
-                obj.put("status", p.status.name)
-                if (p.resolvedDate != null) obj.put("resolvedDate", p.resolvedDate)
-                if (p.barcode != null) obj.put("barcode", p.barcode)
-                if (p.notes != null) obj.put("notes", p.notes)
-                if (p.brand != null) obj.put("brand", p.brand)
-                if (p.snoozeUntil != null) obj.put("snoozeUntil", p.snoozeUntil)
-                array.put(obj)
+            products.forEach { p -> array.put(p.toJson()) }
+
+            val root = JSONObject().apply {
+                put("schemaVersion", 1)
+                put("exportedAt", System.currentTimeMillis())
+                put("products", array)
             }
             
-            val jsonString = array.toString(2)
+            val jsonString = root.toString(2)
             shareTextFile(context, jsonString, "despensa_backup_${System.currentTimeMillis()}.json", "application/json")
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    fun parseProductsJson(content: String): ImportPreview {
+        val trimmed = content.trim()
+        if (trimmed.isBlank()) return ImportPreview(emptyList(), 0)
+
+        val productsArray = if (trimmed.startsWith("[")) {
+            JSONArray(trimmed)
+        } else {
+            JSONObject(trimmed).optJSONArray("products") ?: JSONArray()
+        }
+
+        val products = mutableListOf<Product>()
+        var skipped = 0
+        for (i in 0 until productsArray.length()) {
+            val obj = productsArray.optJSONObject(i)
+            val product = obj?.toProduct()
+            if (product != null) products.add(product) else skipped++
+        }
+
+        return ImportPreview(products, skipped)
     }
 
     fun exportToCsv(context: Context, products: List<Product>) {
@@ -76,4 +98,57 @@ object BackupHelper {
         
         context.startActivity(Intent.createChooser(intent, "Guardar o compartir archivo"))
     }
+
+    private fun Product.toJson(): JSONObject = JSONObject().apply {
+        put("name", name)
+        put("category", category.name)
+        put("totalPrice", totalPrice)
+        put("quantity", quantity)
+        put("unit", unit)
+        put("location", location.name)
+        put("expiryType", expiryType.name)
+        if (expirationDate != null) put("expirationDate", expirationDate)
+        put("addedDate", addedDate)
+        put("status", status.name)
+        if (resolvedDate != null) put("resolvedDate", resolvedDate)
+        if (barcode != null) put("barcode", barcode)
+        if (notes != null) put("notes", notes)
+        if (brand != null) put("brand", brand)
+        if (snoozeUntil != null) put("snoozeUntil", snoozeUntil)
+        if (minimumStock != null) put("minimumStock", minimumStock)
+    }
+
+    private fun JSONObject.toProduct(): Product? {
+        val name = optString("name").trim().ifBlank { return null }
+        return Product(
+            name = name,
+            category = enumValueOrDefault(optString("category"), ProductCategory.OTHER),
+            totalPrice = optDouble("totalPrice", 0.0),
+            quantity = optDouble("quantity", 1.0),
+            unit = optString("unit", "uds").ifBlank { "uds" },
+            location = enumValueOrDefault(optString("location"), ProductLocation.PANTRY),
+            expiryType = enumValueOrDefault(optString("expiryType"), ExpiryType.FIXED),
+            expirationDate = optLongOrNull("expirationDate"),
+            addedDate = optLong("addedDate", System.currentTimeMillis()),
+            status = enumValueOrDefault(optString("status"), ProductStatus.ACTIVE),
+            resolvedDate = optLongOrNull("resolvedDate"),
+            barcode = optStringOrNull("barcode"),
+            notes = optStringOrNull("notes"),
+            brand = optStringOrNull("brand"),
+            snoozeUntil = optLongOrNull("snoozeUntil"),
+            minimumStock = optDoubleOrNull("minimumStock")
+        )
+    }
+
+    private inline fun <reified T : Enum<T>> enumValueOrDefault(value: String?, default: T): T =
+        try { enumValueOf<T>(value.orEmpty()) } catch (_: Exception) { default }
+
+    private fun JSONObject.optStringOrNull(name: String): String? =
+        if (has(name) && !isNull(name)) optString(name).ifBlank { null } else null
+
+    private fun JSONObject.optLongOrNull(name: String): Long? =
+        if (has(name) && !isNull(name)) optLong(name) else null
+
+    private fun JSONObject.optDoubleOrNull(name: String): Double? =
+        if (has(name) && !isNull(name)) optDouble(name) else null
 }

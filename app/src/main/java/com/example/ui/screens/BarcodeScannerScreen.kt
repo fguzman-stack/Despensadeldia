@@ -57,6 +57,8 @@ fun BarcodeScannerScreen(
         }
     }
 
+    var cameraError by remember { mutableStateOf<String?>(null) }
+
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
         if (hasCameraPermission) {
             val executor = remember { Executors.newSingleThreadExecutor() }
@@ -103,6 +105,9 @@ fun BarcodeScannerScreen(
                                             }
                                         }
                                     }
+                                    .addOnFailureListener { e ->
+                                        e.printStackTrace()
+                                    }
                                     .addOnCompleteListener { imageProxy.close() }
                             } else {
                                 imageProxy.close()
@@ -117,7 +122,10 @@ fun BarcodeScannerScreen(
                                 preview,
                                 imageAnalysis
                             )
-                        } catch (_: Exception) {}
+                        } catch (e: Exception) {
+                            cameraError = "Error al iniciar cámara: ${e.message}"
+                            e.printStackTrace()
+                        }
                     }, ContextCompat.getMainExecutor(ctx))
                     previewView
                 }
@@ -163,6 +171,29 @@ fun BarcodeScannerScreen(
                     .padding(bottom = 120.dp)
                     .padding(horizontal = 32.dp)
             )
+
+            if (cameraError != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.8f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(32.dp)) {
+                        Icon(Icons.Filled.Close, contentDescription = null, tint = Color.Red, modifier = Modifier.size(48.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = cameraError!!,
+                            color = Color.White,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { cameraError = null; scanning = true }) {
+                            Text("Reintentar")
+                        }
+                    }
+                }
+            }
         } else {
             Column(
                 modifier = Modifier.fillMaxSize().padding(32.dp),

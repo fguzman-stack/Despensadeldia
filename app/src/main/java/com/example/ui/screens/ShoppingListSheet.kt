@@ -109,7 +109,7 @@ fun ShoppingListSheet(
                 }
             }
 
-            Divider(modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
             // Add new item inline button
             OutlinedButton(
@@ -140,11 +140,30 @@ fun ShoppingListSheet(
 
             if (items.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = stringResource(R.string.shopping_list_empty),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        val composition by com.airbnb.lottie.compose.rememberLottieComposition(
+                            com.airbnb.lottie.compose.LottieCompositionSpec.RawRes(com.example.R.raw.frutas)
+                        )
+                        val progress by com.airbnb.lottie.compose.animateLottieCompositionAsState(
+                            composition,
+                            iterations = com.airbnb.lottie.compose.LottieConstants.IterateForever
+                        )
+                        
+                        if (composition != null) {
+                            com.airbnb.lottie.compose.LottieAnimation(
+                                composition = composition,
+                                progress = { progress },
+                                modifier = Modifier.size(150.dp)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+
+                        Text(
+                            text = stringResource(R.string.shopping_list_empty),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
                 }
             } else {
                 LazyColumn(
@@ -340,7 +359,7 @@ fun BeforeBuyingSheet(
                 }
             }
 
-            Divider(modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
 
             LazyColumn(
                 modifier = Modifier.fillMaxWidth().weight(1f),
