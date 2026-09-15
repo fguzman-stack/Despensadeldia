@@ -5,6 +5,10 @@
   <p>Android offline-first para reducir desperdicio, ahorrar dinero y decidir qué usar primero.</p>
 
   <p>
+    <a href="https://github.com/fguzman-stack/Despensadeldia/releases/latest/download/despensa-al-dia-1.1.0-signed.apk"><img src="https://img.shields.io/badge/⬇_Descargar-APK_v1.1.0-1F6B49?style=for-the-badge&logo=android&logoColor=white" alt="Descargar APK"></a>
+    <a href="https://github.com/fguzman-stack/Despensadeldia/releases"><img src="https://img.shields.io/badge/Todas_las_versions-Releases-E9A93B?style=for-the-badge" alt="Releases"></a>
+  </p>
+  <p>
     <img src="https://img.shields.io/badge/Kotlin-2.2.10-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin">
     <img src="https://img.shields.io/badge/Jetpack_Compose-Material_3-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white" alt="Jetpack Compose">
     <img src="https://img.shields.io/badge/Offline--first-privacy-1F6B49?style=for-the-badge" alt="Offline first">
@@ -12,11 +16,14 @@
   </p>
 </div>
 
-## Descargar
+## Descargar e instalar
 
-La APK firmada se publica en GitHub Releases:
+La última versión, con APK firmada:
 
-https://github.com/fguzman-stack/Despensadeldia/releases/latest
+- ⬇ **[Descargar APK v1.1.0](https://github.com/fguzman-stack/Despensadeldia/releases/latest/download/despensa-al-dia-1.1.0-signed.apk)** (Android 7.0+)
+- Todas las versiones: https://github.com/fguzman-stack/Despensadeldia/releases
+
+Para instalar: descarga el `.apk`, ábrelo en tu Android y permite “instalar aplicaciones de origen desconocido” si lo pide. La APK está firmada; la llave privada no se publica en el repo.
 
 El inventario funciona sin cuenta, sin servidor propio y sin conexión. Algunas funciones opcionales usan internet para buscar códigos de barras, recetas, tasas de cambio o respuestas Gemini si el usuario configura una API key.
 
