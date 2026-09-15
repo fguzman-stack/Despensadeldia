@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/logo/despensa-logo.svg" width="112" height="112" alt="Despensa al Día">
+  <img src="docs/logo/despensa-logo.png" width="112" height="112" alt="Despensa al Día">
   <h1>Despensa al Día</h1>
   <p><strong>Tu despensa, ordenada por urgencia.</strong></p>
   <p>Android offline-first para reducir desperdicio, ahorrar dinero y decidir qué usar primero.</p>
@@ -22,13 +22,13 @@ El inventario funciona sin cuenta, sin servidor propio y sin conexión. Algunas 
 
 ## Capturas
 
-Los mockups son SVG vectoriales (no se corrompen en Git/GitHub):
+Capturas de las pantallas principales (tema claro). Los fuentes vectoriales están en `docs/screenshots/*.svg`:
 
 <p align="center">
-  <img src="docs/screenshots/use-first.svg" width="210" alt="Usa Primero">
-  <img src="docs/screenshots/inventory.svg" width="210" alt="Inventario">
-  <img src="docs/screenshots/stats.svg" width="210" alt="Estadísticas">
-  <img src="docs/screenshots/settings.svg" width="210" alt="Ajustes">
+  <img src="docs/screenshots/use-first.png" width="210" alt="Usa Primero">
+  <img src="docs/screenshots/inventory.png" width="210" alt="Inventario">
+  <img src="docs/screenshots/stats.png" width="210" alt="Estadísticas">
+  <img src="docs/screenshots/settings.png" width="210" alt="Ajustes">
 </p>
 
 El modo `Despensa Pop` (Ajustes > Apariencia) es un tema claro, colorido e infantil con acentos rosa, menta y amarillo.

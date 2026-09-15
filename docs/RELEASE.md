@@ -7,7 +7,7 @@ Mejoras visuales y correcciones del lanzamiento abierto.
 - Nuevo tema `Despensa Pop`: modo claro, colorido e infantil (rosa, menta, amarillo y lavanda) que reemplaza al anterior tema oscuro frutal.
 - Encabezado de `Mi Inventario` rediseñado: título completo, iconos de acceso rápido sin recortes y mejor jerarquía.
 - Contraste corregido en la hero card de `Usa Primero` entre temas claro y Pop.
-- Capturas del README en SVG vectoriales (ya no se corrompen en Git/GitHub).
+- Capturas del README ahora en PNG (render garantizado en GitHub) con fuentes SVG incluidos.
 - Logo del README en SVG.
 
 ## 1.0.0
