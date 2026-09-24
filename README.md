@@ -7,6 +7,7 @@
   <p>
     <a href="https://github.com/fguzman-stack/Despensadeldia/releases/latest/download/despensa-al-dia-1.1.0-signed.apk"><img src="https://img.shields.io/badge/⬇_Descargar-APK_v1.1.0-1F6B49?style=for-the-badge&logo=android&logoColor=white" alt="Descargar APK"></a>
     <a href="https://github.com/fguzman-stack/Despensadeldia/releases"><img src="https://img.shields.io/badge/Todas_las_versions-Releases-E9A93B?style=for-the-badge" alt="Releases"></a>
+    <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/Changelog-Keep_a_Changelog-4285F4?style=for-the-badge" alt="Changelog"></a>
   </p>
   <p>
     <img src="https://img.shields.io/badge/Kotlin-2.2.10-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin">
